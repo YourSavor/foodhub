@@ -34,7 +34,8 @@ To run the FastAPI application, execute the following command:
 python3 -m uvicorn main:app --reload
 ```
 
-### How It Works
+### Database Manager
+
 The db.py module provides functions to establish a connection to the PostgreSQL database using the psycopg2 library. It loads the required environment variables from the .env file and utilizes them to connect to the database.
 
 This module also includes a sample_query() function to demonstrate basic database operations like inserting and querying data
