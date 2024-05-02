@@ -35,4 +35,5 @@ def sample_query():
 
     close_connection(connection, cursor)
 
-sample_query()
+if __name__ == '__main__':
+    sample_query()
