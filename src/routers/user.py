@@ -109,7 +109,7 @@ async def user_transactions(user_id: str):
 
     close_connection(connection, cursor)
     if not user_data:
-        return {'message': 'Invalid uder id!'}
+        return {'message': 'Invalid user id!'}
 
     user_dict = dict(zip(columns, user_data))
     user_dict['message'] = 'User found!'
