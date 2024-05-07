@@ -33,9 +33,9 @@ async def create_food(food: CreateFoodRequest):
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'message': 'Food added successfully'}
+    return {'success': True}
 
-@router.put('/update')
+@router.put('/')
 async def update_food(food: UpdateFoodRequest):
     connection, cursor = establish_connection()
 
@@ -43,14 +43,14 @@ async def update_food(food: UpdateFoodRequest):
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'message': 'Food updated successfully'}
+    return {'success': True}
 
-@router.put('/')
-async def delete_food(id: str):
+@router.put('/delete/{food_id}')
+async def delete_food(food_id: str):
     connection, cursor = establish_connection()
 
-    cursor.execute(delete_food_query, (id,))
+    cursor.execute(delete_food_query, (food_id,))
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'message': 'Food deleted successfully'}
+    return {'success': True}
