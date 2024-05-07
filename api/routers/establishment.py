@@ -5,7 +5,11 @@ from db.db import establish_connection, close_connection
 router = APIRouter(prefix="/establishments", tags=["establishments"])
 
 insert_establishment_query = 'INSERT INTO establishments (user_id, name, location) VALUES ( %s, %s, %s);'
-update_establishment_query = 'UPDATE establishments SET (name=%s, location=%s) WHERE id=%s;'
+update_establishment_query = 'UPDATE establishments SET name=%s, location=%s WHERE id=%s;'
+
+delete_establishment_reviews_query = 'UPDATE reviews SET is_deleted = true WHERE establishment_id = %s;'
+delete_food_items_reviews_query = 'UPDATE reviews SET is_deleted = true WHERE food_id IN (SELECT id FROM foods WHERE establishment_id = %s);'
+delete_food_items_query = 'UPDATE foods SET is_deleted = true WHERE establishment_id = %s;'
 delete_establishment_query = 'UPDATE establishments SET is_deleted = true WHERE id = %s;'
 
 view_establishment_query = 'SELECT * FROM establishments WHERE is_deleted = false ORDER BY '
@@ -103,7 +107,11 @@ async def update_food(establishment: UpdateEstablishmentRequest):
 async def delete_food(establishment: DeleteEstablishRequest):
     connection, cursor = establish_connection()
 
+    cursor.execute(delete_establishment_reviews_query, (establishment.id,))
+    cursor.execute(delete_food_items_reviews_query, (establishment.id,))
+    cursor.execute(delete_food_items_query, (establishment.id,))
     cursor.execute(delete_establishment_query, (establishment.id,))
+
     connection.commit()
 
     close_connection(connection, cursor)

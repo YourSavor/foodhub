@@ -5,7 +5,7 @@ from db.db import establish_connection, close_connection
 select_user = 'SELECT * FROM users;'
 delete_user = 'UPDATE users SET (is_deleted = true) WHERE user_id = %s;'
 insert_user = 'INSERT INTO users (username, hashed_password, first_name, middle_name, last_name) VALUES (%s, %s, %s, %s, %s);'
-update_user = 'UPDATE users SET username=%s, first_name=%s, middle_name=%s, last_name=%s WHERE id = %s;'
+update_user_query = 'UPDATE users SET username=%s, first_name=%s, middle_name=%s, last_name=%s WHERE id = %s;'
 search_user_name = 'SELECT * FROM users WHERE name LIKE "% %s %";'
 search_user_id = 'SELECT * FROM users WHERE id = %s;'
 search_user_username = 'SELECT * FROM users WHERE username=%s;'
@@ -74,7 +74,7 @@ async def update_user(user: UpdateUserRequest):
     # shalle check first if user exist
 
     # add updated at parameter
-    cursor.execute(update_user, (user.username, user.first_name, user.middle_name, user.last_name, user.user_id))
+    cursor.execute(update_user_query, (user.username, user.first_name, user.middle_name, user.last_name, user.user_id))
     connection.commit()
     
     close_connection(connection, cursor)
