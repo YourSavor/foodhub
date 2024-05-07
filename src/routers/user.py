@@ -30,7 +30,7 @@ class CreateUserRequest(BaseModel):
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
 
-@router.get('/')
+@router.get('')
 async def get_user():
     connection, cursor = establish_connection()
 
@@ -54,7 +54,7 @@ async def get_user():
 
     return data_dict
 
-@router.post('/')
+@router.post('')
 async def create_user(user: CreateUserRequest):
     connection, cursor = establish_connection()
 
@@ -67,7 +67,7 @@ async def create_user(user: CreateUserRequest):
     return {'message': 'User created successfully'}
 
 
-@router.put('/')
+@router.put('')
 async def update_user(user: UpdateUserRequest):
     connection, cursor = establish_connection()
 
@@ -80,7 +80,7 @@ async def update_user(user: UpdateUserRequest):
     close_connection(connection, cursor)
     return {'message': 'User updated successfully'}
 
-@router.get('/username/{username}/')
+@router.get('/username/{username}')
 async def user_id(username: str):
     connection, cursor = establish_connection()
     cursor.execute(search_user_username, (username,))
@@ -98,7 +98,7 @@ async def user_id(username: str):
     return user_dict
 
 
-@router.get('/id/{user_id}/')
+@router.get('/id/{user_id}')
 async def user_transactions(user_id: str):
     connection, cursor = establish_connection()
     cursor.execute(search_user_id, (user_id,))

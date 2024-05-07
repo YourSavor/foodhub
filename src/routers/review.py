@@ -6,7 +6,7 @@ insert_review_query = 'INSERT INTO reviews (user_id, establishment_id, food_id, 
 update_review_query = 'UPDATE reviews SET (user_id=%s, establishment_id=%s, food_id=%s, description=%s) WHERE food_id=%s;'
 delete_review_query = 'UPDATE reviews SET (is_deleted = true) WHERE id = %s;'
 
-router = APIRouter(prefix="\reviews", tags=["reviews"])   
+router = APIRouter(prefix="/reviews", tags=["reviews"])   
     
 
 class UpdateReviewRequest(BaseModel):
@@ -26,7 +26,7 @@ class CreateReviewRequest(BaseModel):
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
 
-@router.post('/')
+@router.post('')
 async def create_review(review: CreateReviewRequest):
     connection, cursor = establish_connection()
 
@@ -36,7 +36,7 @@ async def create_review(review: CreateReviewRequest):
     close_connection(connection, cursor)
     return {'message' : 'Review added successfully'}
 
-@router.post('/update')
+@router.post('update')
 async def update_review(review: UpdateReviewRequest):
     connection, cursor = establish_connection()
 
@@ -46,7 +46,7 @@ async def update_review(review: UpdateReviewRequest):
     close_connection(connection, cursor)
     return {'message' : 'Review updated successfully'}
 
-@router.put('/')
+@router.put('')
 async def delete_review(id: str):
     connection, cursor = establish_connection()
 

@@ -25,7 +25,7 @@ class CreateFoodRequest(BaseModel):
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
 
-@router.post('/')
+@router.post('')
 async def create_food(food: CreateFoodRequest):
     connection, cursor = establish_connection()
 
@@ -35,7 +35,7 @@ async def create_food(food: CreateFoodRequest):
     close_connection(connection, cursor)
     return {'success': True}
 
-@router.put('/')
+@router.put('')
 async def update_food(food: UpdateFoodRequest):
     connection, cursor = establish_connection()
 
