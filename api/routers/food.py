@@ -4,7 +4,7 @@ from db.db import establish_connection, close_connection
 
 insert_food_query = 'INSERT INTO foods (establishment_id, name, type, price, rating) VALUES (%s, %s, %s, %s, %s);'
 update_food_query = 'UPDATE foods SET (establishment_id=%s, name=%s, type=%s, price=%s) WHERE id=%s;'
-delete_food_query = 'UPDATE foods SET is_deleted = TRUE WHERE id = %s;'
+delete_food_query = 'UPDATE foods SET is_deleted = TRUE WHERE id = %s; UPDATE reviews SET is_deleted = TRUE WHERE food_id = %s;'
 
 router = APIRouter(prefix="/foods", tags=["foods"])
 
@@ -33,7 +33,7 @@ async def create_food(food: CreateFoodRequest):
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'success': True}
+    return {'message': 'Food added successfully'}
 
 @router.put('')
 async def update_food(food: UpdateFoodRequest):
@@ -43,14 +43,14 @@ async def update_food(food: UpdateFoodRequest):
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'success': True}
+    return {'message': 'Food updated successfully'}
 
 @router.put('/delete/{food_id}')
 async def delete_food(food_id: str):
     connection, cursor = establish_connection()
 
-    cursor.execute(delete_food_query, (food_id,))
+    cursor.execute(delete_food_query, (food_id, food_id))
     connection.commit()
 
     close_connection(connection, cursor)
-    return {'success': True}
+    return {'message': 'Food and associated reviews deleted'}
