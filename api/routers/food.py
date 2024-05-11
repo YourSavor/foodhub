@@ -54,3 +54,196 @@ async def delete_food(food_id: str):
 
     close_connection(connection, cursor)
     return {'message': 'Food and associated reviews deleted'}
+
+
+view_all_food_query = 'SELECT * FROM foods WHERE is_deleted = false AND establishment_id = %s'
+
+@router.get('/all/{establishment_id}/{attribute}/{order}')
+async def retrieve_food(establishment_id: str, attribute: str, order: str):
+    connection, cursor = establish_connection()
+
+    order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
+
+    cursor.execute(view_all_food_query + order_by_query, (establishment_id, ))
+    food_data = cursor.fetchall()
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'foods': []
+        }
+    
+    columns = get_columns(cursor)
+    food_list = [dict(zip(columns, data)) for data in food_data]
+
+    data_dict = {
+        'success': len(food_list),
+        'foods': food_list
+    }
+
+    return data_dict
+
+@router.get('/all/{establishment_id}/{lowprice}/{highprice}/{attribute}/{order}')
+async def retrieve_food_pricerange(establishment_id: str, lowprice:float, highprice:float, attribute: str, order: str):
+    connection, cursor = establish_connection()
+
+    order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
+
+    additional_query = ' AND price BETWEEN %s AND %s' + order_by_query
+
+    cursor.execute(view_all_food_query + additional_query, (establishment_id, lowprice, highprice))
+    food_data = cursor.fetchall()
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'foods': []
+        }
+    
+    columns = get_columns(cursor)
+    food_list = [dict(zip(columns, data)) for data in food_data]
+
+    data_dict = {
+        'success': len(food_list),
+        'foods': food_list
+    }
+
+    return data_dict
+
+
+@router.get('/all/{establishment_id}/{type}/{attribute}/{order}')
+async def retrieve_food_by_type(establishment_id: str, type:str, attribute: str, order: str):
+    connection, cursor = establish_connection()
+
+    order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
+
+    additional_query = ' AND type = %s' + order_by_query
+
+    cursor.execute(view_all_food_query + additional_query, (establishment_id, type))
+    food_data = cursor.fetchall()
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'foods': []
+        }
+    
+    columns = get_columns(cursor)
+    food_list = [dict(zip(columns, data)) for data in food_data]
+
+    data_dict = {
+        'success': len(food_list),
+        'foods': food_list
+    }
+
+    return data_dict
+
+
+@router.get('/all/{establishment_id}/{type}/{lowprice}/{highprice}/{attribute}/{order}')
+async def retrieve_food_by_type_pricerange(establishment_id: str, type:str, lowprice:float, highprice:float, attribute: str, order: str):
+    connection, cursor = establish_connection()
+
+    order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
+
+    additional_query = ' AND type = %s AND price BETWEEN %s AND %s' + order_by_query
+
+    cursor.execute(view_all_food_query + additional_query, (establishment_id, type, lowprice, highprice))
+    food_data = cursor.fetchall()
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'foods': []
+        }
+    
+    columns = get_columns(cursor)
+    food_list = [dict(zip(columns, data)) for data in food_data]
+
+    data_dict = {
+        'success': len(food_list),
+        'foods': food_list
+    }
+
+    return data_dict
+
+
+
+view_food_query = 'SELECT * FROM foods WHERE is_deleted = false AND id = %s;'
+
+@router.get('/{id}')
+async def retrieve_food_by_id(id: str):
+    connection, cursor = establish_connection()
+
+    cursor.execute(view_food_query, (id,))
+    food_data = cursor.fetchone() 
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'food': None
+        }
+    
+    columns = get_columns(cursor)
+    food_dict = dict(zip(columns, food_data))
+
+    return {
+        'success': 1,
+        'food': food_dict
+    }
+
+search_food_query = """
+    SELECT * FROM foods 
+    WHERE is_deleted = false 
+    AND (LOWER(name) LIKE LOWER(%s) OR LOWER(name) LIKE LOWER(%s)) 
+    ORDER BY 
+        CASE 
+            WHEN LOWER(name) LIKE LOWER(%s) THEN 0 
+            ELSE 1 
+        END;
+"""
+
+@router.get('/all/search')
+async def retrieve_food_by_type_pricerange(name: str):
+    connection, cursor = establish_connection()
+
+    name_lower = name.lower()
+    cursor.execute(
+        search_food_query, 
+        (f'{name_lower}%', f'%{name_lower}%', f'{name_lower}%')
+    )
+    food_data = cursor.fetchall()
+    connection.commit()
+
+    close_connection(connection, cursor)
+
+    if not food_data:
+        return {
+            'success': 0,
+            'foods': []
+        }
+    
+    columns = get_columns(cursor)
+    food_list = [dict(zip(columns, data)) for data in food_data]
+
+    data_dict = {
+        'success': len(food_list),
+        'foods': food_list
+    }
+
+    return data_dict
+
