@@ -118,7 +118,7 @@ async def retrieve_food_pricerange(establishment_id: str, lowprice:float, highpr
 
 
 @router.get('/all/{establishment_id}/{type}/{attribute}/{order}')
-async def retrieve_food_by_type(establishment_id: str, type:str, attribute: str, order: str):
+async def retrieve_food_type(establishment_id: str, type:str, attribute: str, order: str):
     connection, cursor = establish_connection()
 
     order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
@@ -149,7 +149,7 @@ async def retrieve_food_by_type(establishment_id: str, type:str, attribute: str,
 
 
 @router.get('/all/{establishment_id}/{type}/{lowprice}/{highprice}/{attribute}/{order}')
-async def retrieve_food_by_type_pricerange(establishment_id: str, type:str, lowprice:float, highprice:float, attribute: str, order: str):
+async def retrieve_food_type_pricerange(establishment_id: str, type:str, lowprice:float, highprice:float, attribute: str, order: str):
     connection, cursor = establish_connection()
 
     order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
@@ -183,7 +183,7 @@ async def retrieve_food_by_type_pricerange(establishment_id: str, type:str, lowp
 view_food_query = 'SELECT * FROM foods WHERE is_deleted = false AND id = %s;'
 
 @router.get('/{id}')
-async def retrieve_food_by_id(id: str):
+async def retrieve_food_id(id: str):
     connection, cursor = establish_connection()
 
     cursor.execute(view_food_query, (id,))
@@ -218,7 +218,7 @@ search_food_query = """
 """
 
 @router.get('/all/search')
-async def retrieve_food_by_type_pricerange(name: str):
+async def search_food(name: str):
     connection, cursor = establish_connection()
 
     name_lower = name.lower()
