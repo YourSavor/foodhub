@@ -3,7 +3,7 @@ from pydantic import BaseModel
 from db.db import establish_connection, close_connection
 
 insert_food_query = 'INSERT INTO foods (establishment_id, name, type, price, rating) VALUES (%s, %s, %s, %s, %s);'
-update_food_query = 'UPDATE foods SET (establishment_id=%s, name=%s, type=%s, price=%s) WHERE id=%s;'
+update_food_query = 'UPDATE foods SET name=%s, type=%s, price=%s WHERE id=%s;'
 delete_food_query = 'UPDATE foods SET is_deleted = TRUE WHERE id = %s; UPDATE reviews SET is_deleted = TRUE WHERE food_id = %s;'
 
 router = APIRouter(prefix="/foods", tags=["foods"])
@@ -39,7 +39,7 @@ async def create_food(food: CreateFoodRequest):
 async def update_food(food: UpdateFoodRequest):
     connection, cursor = establish_connection()
 
-    cursor.execute(update_food_query, (food.establishment_id, food.name, food.type, food.price, food.id))
+    cursor.execute(update_food_query, (food.name, food.type, food.price, food.id))
     connection.commit()
 
     close_connection(connection, cursor)
@@ -209,11 +209,12 @@ async def retrieve_food_id(id: str):
 search_food_query = """
     SELECT * FROM foods 
     WHERE is_deleted = false 
-    AND (LOWER(name) LIKE LOWER(%s) OR LOWER(name) LIKE LOWER(%s)) 
+    AND LOWER(name) LIKE LOWER(CONCAT('%', %s, '%')) 
     ORDER BY 
         CASE 
-            WHEN LOWER(name) LIKE LOWER(%s) THEN 0 
-            ELSE 1 
+            WHEN LOWER(name) = LOWER(%s) THEN 0 
+            WHEN LOWER(name) LIKE LOWER(CONCAT(%s, '%')) THEN 1 
+            ELSE 2 
         END;
 """
 
