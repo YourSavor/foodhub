@@ -48,6 +48,7 @@ def dashboard():
 
 def establishments():
     st.title("Establishments")
+    establishment.estab_stream()
 
 def myEstablishments():
     if 'page' in state and state.page == 'add_estab':
