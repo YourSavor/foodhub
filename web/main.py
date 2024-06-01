@@ -9,14 +9,9 @@ def main():
     st.write(page)
 
     if page == "Sign Up":
-        from pages.signup import signup
         signup()
     elif page == "Sign In":
-        from pages.signin import signin
         signin()
-    elif page == "Account":
-        from pages.account import account
-        account()
 
 def signin():
     st.title("Sign In")
@@ -40,14 +35,18 @@ def signup():
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
-    email = st.text_input("Email")
+    first_name = st.text_input("First name")
+    middle_name = st.text_input("Middle name")
+    last_name = st.text_input("Last name")
 
     if st.button("Sign Up"):
         
-      response = requests.post(f"{API_URL}/signup", json={
+      response = requests.post(f"{API_URL}/users/signup", json={
           "username": username,
           "password": password,
-          "email": email
+          "first_name": first_name,
+          "middle_name": middle_name,
+          "last_name": last_name
       })
 
       if response.status_code == 201:
