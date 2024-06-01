@@ -1,6 +1,9 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from db.db import establish_connection, close_connection
+from passlib.context import CryptContext
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 select_user = 'SELECT * FROM users;'
 delete_user = 'UPDATE users SET (is_deleted = true) WHERE user_id = %s;'
@@ -20,12 +23,16 @@ class UpdateUserRequest(BaseModel):
     middle_name: str
     last_name: str
 
-class CreateUserRequest(BaseModel):
+class UserSignUpRequest(BaseModel):
     username: str
-    hashed_password: str
+    password: str
     first_name: str
     middle_name: str
     last_name: str
+
+class UserSignInRequest(BaseModel):
+    username: str
+    password: str
 
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
@@ -53,19 +60,6 @@ async def get_user():
     }
 
     return data_dict
-
-@router.post('')
-async def create_user(user: CreateUserRequest):
-    connection, cursor = establish_connection()
-
-    # shalle check first if user exist
-    
-    cursor.execute(insert_user, (user.username, user.hashed_password, user.first_name, user.middle_name, user.last_name))
-    connection.commit()
-
-    close_connection(connection, cursor)
-    return {'message': 'User created successfully'}
-
 
 @router.put('')
 async def update_user(user: UpdateUserRequest):
@@ -115,3 +109,33 @@ async def user_transactions(user_id: str):
     user_dict['message'] = 'User found!'
     return user_dict
 
+@router.post("/signin")
+async def signin(user: UserSignInRequest):
+    connection, cursor = establish_connection()
+    cursor.execute(search_user_username, (user.username,))
+    user_data = cursor.fetchone()
+    close_connection(connection, cursor)
+
+    if not user_data:
+        raise HTTPException(status_code=400, detail="Invalid username or password")
+
+    user_dict = dict(zip(get_columns(cursor), user_data))
+    if not pwd_context.verify(user.password, user_dict["hashed_password"]):
+        raise HTTPException(status_code=400, detail="Invalid username or password")
+
+    return {"message": "Successfully signed in", "user": user_dict}
+
+@router.post("/signup")
+async def create_user(user: UserSignUpRequest):
+    connection, cursor = establish_connection()
+    hashed_password = pwd_context.hash(user.password)
+
+    cursor.execute(search_user_username, (user.username,))
+    if cursor.fetchone():
+        close_connection(connection, cursor)
+        raise HTTPException(status_code=400, detail="Username already exists")
+
+    cursor.execute(insert_user, (user.username, hashed_password, user.first_name, user.middle_name, user.last_name))
+    connection.commit()
+    close_connection(connection, cursor)
+    return {"message": "User created successfully"}
