@@ -93,7 +93,7 @@ async def create_establishment(establishment: CreateEstablishmentRequest):
     close_connection(connection, cursor)
     return {'success': True}
 
-@router.put('/udate')
+@router.put('/update')
 async def update_food(establishment: UpdateEstablishmentRequest):
     connection, cursor = establish_connection()
 

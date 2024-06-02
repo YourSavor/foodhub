@@ -1,0 +1,9 @@
+div.stButton button {
+    width: 100%;
+}
+
+st.set_page_config(
+    page_title='YourSavor', 
+    layout='wide', 
+    initial_sidebar_state='auto'
+)
