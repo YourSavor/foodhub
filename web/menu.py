@@ -4,7 +4,7 @@ import streamlit as st
 def authenticated_menu():
   st.sidebar.page_link("pages/profile.py", label="Profile")
   st.sidebar.page_link("pages/establishments.py", label="Establishments")
-  st.sidebar.page_link("pages/foods.py", label="Foods")
+  st.sidebar.page_link("pages/my_establishment.py", label="My Establishment")
   st.sidebar.page_link("pages/signout.py", label="Sign out")
 
 def unauthenticated_menu():
