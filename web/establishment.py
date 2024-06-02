@@ -88,7 +88,7 @@ def estab_info():
 
         st.info(estab_info)
 
-        if (estab['user_id'] == state.user['id'] and state.page == 'myestab_info'):
+        if (state.page == 'myestab_info'):
             if st.button('Edit', key='edit_button'):
                 state.page = 'estab_edit'
                 st.rerun()
@@ -149,7 +149,7 @@ def estab_edit():
             st.rerun()
     with col2:
         
-        st.title(f"Update {estab['name']}")
+        st.title(f"Edit {estab['name']}")
 
     name = st.text_input('New Name:', value=estab['name'])
     location = st.text_input('New Location:', value=estab['location'])
@@ -168,7 +168,7 @@ def estab_edit():
         if response.status_code == 200:
             refresh_stream('name', 'asc')
             state.page = 'estab_info'
-            st.toast(f"{estab['name']} deleted!")
+            st.toast(f"{estab['name']} edited!")
             st.rerun()
         else:
             st.error(f"Can't edit {estab['name']}!")

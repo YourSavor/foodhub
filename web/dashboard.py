@@ -57,7 +57,9 @@ def myEstablishments():
         establishment.estab_edit()
     elif 'page' in state and state.page == 'food_add':
         food.food_add()
-    elif 'page' in state and state.page == 'food_info':
+    elif 'page' in state and state.page == 'food_edit':
+        food.food_edit()
+    elif 'page' in state and state.page == 'myestabfood_info':
         food.food_info()
     else:
         establishment.myestab_stream()

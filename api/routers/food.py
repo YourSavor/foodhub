@@ -10,11 +10,9 @@ router = APIRouter(prefix="/foods", tags=["foods"])
 
 class UpdateFoodRequest(BaseModel):
     id: str
-    establishment_id: str
     name: str
     type: str
     price: float
-    rating: float
 
 class CreateFoodRequest(BaseModel):
     establishment_id: str
@@ -63,8 +61,6 @@ async def retrieve_food(establishment_id: str, attribute: str, order: str):
     connection, cursor = establish_connection()
 
     order_by_query = ' ORDER BY ' + f"{attribute.lower()} {order.upper()};"
-
-    print(view_all_food_query + order_by_query)
 
     cursor.execute(view_all_food_query + order_by_query, (establishment_id, ))
     food_data = cursor.fetchall()

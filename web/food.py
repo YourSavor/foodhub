@@ -110,13 +110,35 @@ def food_list():
                 food_label = f"{food['name']} | (P {food['price']:.2f})"
                 if st.button(food_label):
                     state.selected_food = food
-                    state.page = 'food_info'
+                    
+                    if (state.page == 'myestab_info'):
+                        state.page = 'myestabfood_info'
+                    else:
+                        state.page = 'food_info'
                     st.rerun()
 
     
 def food_info():
     col1, col2 = st.columns([0.5, 10])
-    estab = state.selected_estab
+    food = state.selected_food
+
+    created_at_dt = datetime.strptime(food['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+    formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
+
+    food_info = f"""
+        **{food['name']}**
+        ---
+        - **Type:** {food['type']}
+        - **Price:** {food['price']}
+        - **Rating:** {food['rating']}
+        - **Added:** {formatted_created_at}
+        """
+    
+    if food['updated_at']:
+        updated_at_dt = datetime.strptime(food['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+        formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
+        estab_info = f"{estab_info} - **Updated:** {formatted_updated_at}"
+    
 
     with col1:
         if st.button('←', help="Go Back"):
@@ -125,7 +147,70 @@ def food_info():
             st.rerun()
     with col2:
         food = state.selected_food
-        st.title(f"Info page {food['name']}")
+        st.info(food_info)
+
+        if state.page == 'myestabfood_info':
+            if st.button('Edit', key='edit_button'):
+                state.page = 'food_edit'
+                st.rerun()
+
+            if st.button('Delete', key='delete_button'):
+                response = requests.put(f"{API_URL}/foods/delete/{food['id']}")
+
+                if (response.status_code == 200):
+                    refresh_foodstream('name', 'asc')
+                    st.toast(f"{food['name']} deleted!")
+                    state.page = 'myestab_info'
+                    st.rerun()
+                else:
+                    st.error(f"Can't delete {food['name']}!")
+
+def food_edit():
+    col1, col2 = st.columns([0.5, 10])
+    food = state.selected_food
+
+    with col1:
+        if st.button('←', help="Go Back"):
+            state.page = 'myestabfood_info'
+            st.rerun()
+            
+    with col2:
+        st.title(f"Edit {food['name']}")
+
+        name = st.text_input('Food Name:', value = food['name'])
+
+        if (food['type'] in ('Meat', 'Vegetable')):
+            type = st.selectbox('Food Type:', ['Meat', 'Vegetable', 'Others'], index = ['Meat', 'Vegetable'].index(food['type']))
+        else:
+            type = st.selectbox('Food Type:', ['Meat', 'Vegetable', 'Others'], value = 'Others')
+
+        if (type == 'Others'):
+            others_type = st.text_input('Food Type:', value = food['type'])
+
+            if others_type.strip():
+                type = others_type
+
+        price = st.number_input('Price:', min_value=0.00, format="%.2f", value = food['price'])
+
+        if st.button('Submit'):
+            
+            if not (name.strip() and type.strip() and price > 0):
+                st.error('Please fill all fields.')
+            
+            response = requests.put(f"{API_URL}/foods", json={
+                'id': food['id'],
+                'name': name,
+                'type': type,
+                'price': price,
+            })
+
+            if (response.status_code == 200):
+                refresh_foodstream('name', 'asc')
+                st.toast(f"{name} edited!")
+                state.page = 'myestabfood_info'
+                st.rerun()
+            else:
+                st.error(f"Can't edit {name}!")
 
 
 def food_add():
