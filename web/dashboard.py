@@ -42,15 +42,13 @@ def dashboard():
 def establishments():
     if 'page' in state and state.page == 'estab_info':
         establishment.estab_info()
-    elif 'page' in state and state.page == 'estab_edit':
-        establishment.estab_edit()
     else:
         establishment.estab_stream()
 
 def myEstablishments():
     if 'page' in state and state.page == 'estab_add':
         establishment.estab_add()
-    elif 'page' in state and state.page == 'estab_info':
+    elif 'page' in state and state.page == 'myestab_info':
         establishment.estab_info()
     elif 'page' in state and state.page == 'estab_edit':
         establishment.estab_edit()

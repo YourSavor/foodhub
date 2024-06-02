@@ -37,7 +37,7 @@ def estab_stream():
     if high_only == 'All':
         refresh_stream(order_by, order)
     else:
-        response = requests.get(f'{API_URL}/establishments/high/{order}')
+        response = requests.get(f"{API_URL}/establishments/high/{order}")
 
         if response.status_code != 200:
             st.error("Error Fetching establishments!")
@@ -85,18 +85,19 @@ def estab_info():
 
         st.info(estab_info)
 
-        if (estab['user_id'] == state.user['id'] and state.page):
+        if (estab['user_id'] == state.user['id'] and state.page == 'myestab_info'):
             if st.button('Edit', key='edit_button'):
                 state.page = 'estab_edit'
                 st.rerun()
 
             if st.button('Delete', key='delete_button'):
-                response = requests.put(f'{API_URL}/establishments/delete', json={
+                response = requests.put(f"{API_URL}/establishments/delete", json={
                     'id': estab['id'],
                 })
 
                 if (response.status_code == 200):
                     refresh_stream('name', 'asc')
+                    st.toast(f"{estab['name']} deleted!")
                     state.page = 'stream'
                     st.rerun()
                 else:
@@ -130,7 +131,7 @@ def myestab_stream():
         with st.container():
             if st.button(establishment['name']):
                 state.selected_estab = establishment
-                state.page = 'estab_info'
+                state.page = 'myestab_info'
                 st.rerun()
 
 def estab_edit():
@@ -154,7 +155,7 @@ def estab_edit():
         if not (name.strip() and location.strip()):
             st.error('Name and location cannot be empty.')
 
-        response = requests.put(f'{API_URL}/establishments/update', json={
+        response = requests.put(f"{API_URL}/establishments/update", json={
             'id': estab['id'],
             'name': name,
             'location': location,
@@ -163,6 +164,7 @@ def estab_edit():
         if response.status_code == 200:
             refresh_stream('name', 'asc')
             state.page = 'estab_info'
+            st.toast(f"{estab['name']} deleted!")
             st.rerun()
         else:
             st.error(f"Can't edit {estab['name']}!")
@@ -188,16 +190,14 @@ def estab_add():
         if not (name.strip() and location.strip()):
             st.error('Name and location cannot be empty.')
           
-        response = requests.post(f'{API_URL}/establishments/insert', json={
+        response = requests.post(f"{API_URL}/establishments/insert", json={
             'user_id': state.user['id'],
             'name': name,
             'location': location,
         })
 
         if (response.status_code == 200):
-            st.success(f'{name} added to establishments!')
+            st.toast(f"{name} added to establishments!")
         else:
             st.error(f"Can't add {name}!")
-
-        st.clear()
         
