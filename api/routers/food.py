@@ -62,7 +62,9 @@ view_all_food_query = 'SELECT * FROM foods WHERE is_deleted = false AND establis
 async def retrieve_food(establishment_id: str, attribute: str, order: str):
     connection, cursor = establish_connection()
 
-    order_by_query = ' ORDER BY' + f'{attribute.lower(), order.upper()};'
+    order_by_query = ' ORDER BY ' + f"{attribute.lower()} {order.upper()};"
+
+    print(view_all_food_query + order_by_query)
 
     cursor.execute(view_all_food_query + order_by_query, (establishment_id, ))
     food_data = cursor.fetchall()
@@ -209,16 +211,16 @@ async def retrieve_food_id(id: str):
 search_food_query = """
     SELECT * FROM foods 
     WHERE is_deleted = false 
-    AND LOWER(name) LIKE LOWER(CONCAT('%', %s, '%')) 
+    AND LOWER(name) LIKE %s 
     ORDER BY 
         CASE 
-            WHEN LOWER(name) = LOWER(%s) THEN 0 
-            WHEN LOWER(name) LIKE LOWER(CONCAT(%s, '%')) THEN 1 
+            WHEN LOWER(name) = %s THEN 0 
+            WHEN LOWER(name) LIKE %s THEN 1 
             ELSE 2 
         END;
 """
 
-@router.get('/all/search')
+@router.get('/all/search/{name}')
 async def search_food(name: str):
     connection, cursor = establish_connection()
 

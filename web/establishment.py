@@ -5,8 +5,10 @@ from datetime import datetime
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
-def refresh_stream(order_by, order):
-    response = requests.get(f'{API_URL}/establishments/all/{order}/{order_by}')
+import food
+
+def refresh_stream(attrib, order):
+    response = requests.get(f'{API_URL}/establishments/all/{order}/{attrib}')
 
     if response.status_code != 200:
         st.error("Error Fetching establishments!")
@@ -25,7 +27,7 @@ def refresh_stream(order_by, order):
 def estab_stream():
     st.title('Establishments')
     name = st.text_input('Search:')
-    order_by = st.selectbox('Order by:', ['Name', 'Rating'])
+    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
 
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
     order = 'asc' if sort_order == 'Ascending' else 'desc'
@@ -35,7 +37,7 @@ def estab_stream():
     st.divider()
 
     if high_only == 'All':
-        refresh_stream(order_by, order)
+        refresh_stream(attrib, order)
     else:
         response = requests.get(f"{API_URL}/establishments/high/{order}")
 
@@ -56,6 +58,7 @@ def estab_stream():
                 st.rerun()
 
 def estab_info():
+
     col1, col2 = st.columns([0.5, 10])
 
     with col1:
@@ -102,9 +105,10 @@ def estab_info():
                     st.rerun()
                 else:
                     st.error(f"Can't delete {estab['name']}!")
-
             
         st.divider()
+
+        food.food_list()
    
 
 def myestab_stream():
@@ -114,13 +118,13 @@ def myestab_stream():
         state.page = 'estab_add'
         st.rerun()
     
-    order_by = st.selectbox('Order by:', ['Name', 'Rating'])
+    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
     order = 'asc' if sort_order == 'Ascending' else 'desc'
 
     st.divider()
 
-    refresh_stream(order_by, order)
+    refresh_stream(attrib, order)
 
     if 'stream' not in state:
         return
@@ -171,6 +175,7 @@ def estab_edit():
 
 
 def estab_add():
+    
     col1, col2 = st.columns([0.5, 10])
 
     with col1:
@@ -182,22 +187,22 @@ def estab_add():
     with col2:
         st.title('Add Establishment')
 
-    name = st.text_input('Enter Establishment Name:')
-    location = st.text_input('Enter Establishment Location:')
+        name = st.text_input('Enter Establishment Name:')
+        location = st.text_input('Enter Establishment Location:')
 
-    if st.button('Submit'):
-        
-        if not (name.strip() and location.strip()):
-            st.error('Name and location cannot be empty.')
-          
-        response = requests.post(f"{API_URL}/establishments/insert", json={
-            'user_id': state.user['id'],
-            'name': name,
-            'location': location,
-        })
+        if st.button('Submit'):
+            
+            if not (name.strip() and location.strip()):
+                st.error('Name and location cannot be empty.')
+            
+            response = requests.post(f"{API_URL}/establishments/insert", json={
+                'user_id': state.user['id'],
+                'name': name,
+                'location': location,
+            })
 
-        if (response.status_code == 200):
-            st.toast(f"{name} added to establishments!")
-        else:
-            st.error(f"Can't add {name}!")
+            if (response.status_code == 200):
+                st.toast(f"{name} added to establishments!")
+            else:
+                st.error(f"Can't add {name}!")
         

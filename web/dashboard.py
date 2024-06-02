@@ -3,6 +3,7 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 
 import establishment
+import food
 
 state = st.session_state
 
@@ -42,6 +43,8 @@ def dashboard():
 def establishments():
     if 'page' in state and state.page == 'estab_info':
         establishment.estab_info()
+    elif 'page' in state and state.page == 'food_info':
+        food.food_info()
     else:
         establishment.estab_stream()
 
@@ -52,6 +55,10 @@ def myEstablishments():
         establishment.estab_info()
     elif 'page' in state and state.page == 'estab_edit':
         establishment.estab_edit()
+    elif 'page' in state and state.page == 'food_add':
+        food.food_add()
+    elif 'page' in state and state.page == 'food_info':
+        food.food_info()
     else:
         establishment.myestab_stream()
 
