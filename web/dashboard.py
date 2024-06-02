@@ -74,12 +74,6 @@ def myProfile():
     st.json(currUser)
 
 
-st.set_page_config(
-    page_title='YourSavor', 
-    layout='wide', 
-    initial_sidebar_state='auto'
-)
-
 # CSS for full-width buttons
 st.markdown("""
     <style>

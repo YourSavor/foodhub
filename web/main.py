@@ -1,6 +1,7 @@
 import requests
 import streamlit as st
-import streamlit.components.v1 as components
+
+from dashboard import establishments, myEstablishments, myProfile
 
 API_URL = "http://127.0.0.1:8000"
 
@@ -10,8 +11,14 @@ def main():
 
   if st.session_state.page == "Sign In":
       signin()
-  else:
+  elif st.session_state.page == "Sign Up":
       signup()
+  elif st.session_state.page == 'Establishments':
+      establishments()
+  elif st.session_state.page == 'My Establishments':
+      myEstablishments()
+  elif st.session_state.page == 'Profile':
+      myProfile()
 
 def signin():
   st.title("Sign In")
@@ -27,8 +34,7 @@ def signin():
 
     if response.status_code == 200:
       st.session_state.current_user = response.json().get("user")
-      from dashboard import dashboard
-      dashboard()
+      st.session_state.page = 'Establishments'
     else:
         print(response.json())
         st.error(response.json().get("detail"))
