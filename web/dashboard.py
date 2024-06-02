@@ -41,25 +41,25 @@ def dashboard():
         myProfile()
 
 def establishments():
-    if 'page' in state and state.page == 'estab_info':
+    if 'page' in state and state.page == 'estab/info':
         establishment.estab_info()
-    elif 'page' in state and state.page == 'food_info':
+    elif 'page' in state and state.page == 'food/info':
         food.food_info()
     else:
         establishment.estab_stream()
 
 def myEstablishments():
-    if 'page' in state and state.page == 'estab_add':
+    if 'page' in state and state.page == 'estab/add':
         establishment.estab_add()
-    elif 'page' in state and state.page == 'myestab_info':
+    elif 'page' in state and state.page == 'estab/my/info':
         establishment.estab_info()
-    elif 'page' in state and state.page == 'estab_edit':
+    elif 'page' in state and state.page == 'estab/my/edit':
         establishment.estab_edit()
-    elif 'page' in state and state.page == 'food_add':
+    elif 'page' in state and state.page == 'food/add':
         food.food_add()
-    elif 'page' in state and state.page == 'food_edit':
+    elif 'page' in state and state.page == 'food/edit':
         food.food_edit()
-    elif 'page' in state and state.page == 'myestabfood_info':
+    elif 'page' in state and state.page == 'estab/my/food':
         food.food_info()
     else:
         establishment.myestab_stream()

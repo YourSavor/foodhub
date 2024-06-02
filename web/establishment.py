@@ -54,7 +54,7 @@ def estab_stream():
         with st.container():
             if st.button(establishment['name']):
                 state.selected_estab = establishment
-                state.page = 'estab_info'
+                state.page = 'estab/info'
                 st.rerun()
 
 def estab_info():
@@ -88,9 +88,9 @@ def estab_info():
 
         st.info(estab_info)
 
-        if (state.page == 'myestab_info'):
+        if (state.page == 'estab/my/info'):
             if st.button('Edit', key='edit_button'):
-                state.page = 'estab_edit'
+                state.page = 'estab/my/edit'
                 st.rerun()
 
             if st.button('Delete', key='delete_button'):
@@ -115,7 +115,7 @@ def myestab_stream():
     st.title('My Establishments')
 
     if st.button('Add', key='add_button'):
-        state.page = 'estab_add'
+        state.page = 'estab/add'
         st.rerun()
     
     attrib = st.selectbox('Order by:', ['Name', 'Rating'])
@@ -135,7 +135,7 @@ def myestab_stream():
         with st.container():
             if st.button(establishment['name']):
                 state.selected_estab = establishment
-                state.page = 'myestab_info'
+                state.page = 'estab/my/info'
                 st.rerun()
 
 def estab_edit():
@@ -145,33 +145,33 @@ def estab_edit():
     with col1:
         if st.button('←', help="Go Back"):
             refresh_stream('name', 'asc')
-            state.page = 'estab_info'
+            state.page = 'estab/my/info'
             st.rerun()
     with col2:
         
         st.title(f"Edit {estab['name']}")
 
-    name = st.text_input('New Name:', value=estab['name'])
-    location = st.text_input('New Location:', value=estab['location'])
+        name = st.text_input('New Name:', value=estab['name'])
+        location = st.text_input('New Location:', value=estab['location'])
 
-    if st.button('Submit'):
-        
-        if not (name.strip() and location.strip()):
-            st.error('Name and location cannot be empty.')
+        if st.button('Submit'):
+            
+            if not (name.strip() and location.strip()):
+                st.error('Name and location cannot be empty.')
 
-        response = requests.put(f"{API_URL}/establishments/update", json={
-            'id': estab['id'],
-            'name': name,
-            'location': location,
-        })
+            response = requests.put(f"{API_URL}/establishments/update", json={
+                'id': estab['id'],
+                'name': name,
+                'location': location,
+            })
 
-        if response.status_code == 200:
-            refresh_stream('name', 'asc')
-            state.page = 'estab_info'
-            st.toast(f"{estab['name']} edited!")
-            st.rerun()
-        else:
-            st.error(f"Can't edit {estab['name']}!")
+            if response.status_code == 200:
+                refresh_stream('name', 'asc')
+                state.page = 'estab/info'
+                st.toast(f"{estab['name']} edited!")
+                st.rerun()
+            else:
+                st.error(f"Can't edit {estab['name']}!")
 
 
 def estab_add():

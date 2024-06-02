@@ -85,9 +85,9 @@ def food_list():
 
 
     with col2:
-        if (estab['user_id'] == state.user['id'] and state.page == 'myestab_info'):
+        if (estab['user_id'] == state.user['id'] and state.page == 'estab/my/info'):
             if st.button('Add an Item', key='add_button'):
-                state.page = 'food_add'
+                state.page = 'food/add'
                 st.rerun()
 
         name = st.text_input('Search Food:')
@@ -113,10 +113,11 @@ def food_list():
                 if st.button(food_label):
                     state.selected_food = food
                     
-                    if (state.page == 'myestab_info'):
-                        state.page = 'myestabfood_info'
+                    if (state.page == 'estab/my/info'):
+                        state.page = 'estab/my/food'
                     else:
-                        state.page = 'food_info'
+                        state.page = 'food/info'
+                    
                     st.rerun()
 
     
@@ -145,15 +146,19 @@ def food_info():
     with col1:
         if st.button('←', help="Go Back"):
             refresh_foodstream('name', 'asc')
-            state.page = 'estab_info'
+            if state.page == 'estab/my/food':
+                state.page = 'estab/my/info'
+            else:
+                state.page = 'estab/info'
+            
             st.rerun()
     with col2:
         food = state.selected_food
         st.info(food_info)
 
-        if state.page == 'myestabfood_info':
+        if state.page == 'estab/my/food':
             if st.button('Edit', key='edit_button'):
-                state.page = 'food_edit'
+                state.page = 'food/edit'
                 st.rerun()
 
             if st.button('Delete', key='delete_button'):
@@ -162,7 +167,7 @@ def food_info():
                 if (response.status_code == 200):
                     refresh_foodstream('name', 'asc')
                     st.toast(f"{food['name']} deleted!")
-                    state.page = 'myestab_info'
+                    state.page = 'estab/my/info'
                     st.rerun()
                 else:
                     st.error(f"Can't delete {food['name']}!")
@@ -173,7 +178,8 @@ def food_edit():
 
     with col1:
         if st.button('←', help="Go Back"):
-            state.page = 'myestabfood_info'
+            refresh_foodstream('name', 'asc')
+            state.page = 'estab/my/food'
             st.rerun()
             
     with col2:
@@ -209,7 +215,7 @@ def food_edit():
             if (response.status_code == 200):
                 refresh_foodstream('name', 'asc')
                 st.toast(f"{name} edited!")
-                state.page = 'myestabfood_info'
+                state.page = 'estab/my/food'
                 st.rerun()
             else:
                 st.error(f"Can't edit {name}!")
@@ -220,7 +226,7 @@ def food_add():
 
     with col1:
         if st.button('←', help="Go Back"):
-            state.page = 'myestab_info'
+            state.page = 'estab/my/info'
             st.rerun()
             
     with col2:
