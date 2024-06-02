@@ -53,7 +53,12 @@ def filters():
         
         state.foodstream = response.json()['foods']
     elif (type_filter == 'All') and filter_price:
-        max_price = max(food['price'] for food in state.foodstream)
+
+        max_price = 0.00
+
+        if len(state.foodstream) != 0:
+            max_price = max(food['price'] for food in state.foodstream)
+
         low_price = st.number_input('Min:', min_value=0.00, format="%.2f")
         high_price = st.number_input('Max:', min_value=0.00, value=max_price, format="%.2f")
 
@@ -116,7 +121,7 @@ def food_list():
                     if (state.page == 'estab/my/info'):
                         state.page = 'estab/my/food'
                     else:
-                        state.page = 'food/info'
+                        state.page = 'estab/food/info'
                     
                     st.rerun()
 
@@ -124,6 +129,7 @@ def food_list():
 def food_info():
     col1, col2 = st.columns([0.5, 10])
     food = state.selected_food
+    estab = state.selected_estab
 
     created_at_dt = datetime.strptime(food['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
     formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
@@ -172,6 +178,14 @@ def food_info():
                 else:
                     st.error(f"Can't delete {food['name']}!")
 
+        if (state.page == 'estab/food/info' and state.user['id'] != estab['user_id']):
+            if st.button('Add A Review', key='addreview_button'):
+                state.page = 'food/review/add'
+                st.rerun()
+        else:
+            if st.button('Add A Review', key='addreview_button', disabled=True):
+                st.toast("You are not allowed to review your own items.")
+
 def food_edit():
     col1, col2 = st.columns([0.5, 10])
     food = state.selected_food
@@ -204,6 +218,7 @@ def food_edit():
             
             if not (name.strip() and type.strip() and price > 0):
                 st.error('Please fill all fields.')
+                return
             
             response = requests.put(f"{API_URL}/foods", json={
                 'id': food['id'],

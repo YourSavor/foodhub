@@ -105,6 +105,14 @@ def estab_info():
                     st.rerun()
                 else:
                     st.error(f"Can't delete {estab['name']}!")
+
+        if (state.page == 'estab/info' and state.user['id'] != estab['user_id']):
+            if st.button('Add A Review', key='addreview_button'):
+                state.page = 'estab/review/add'
+                st.rerun()
+        else:
+            if st.button('Add A Review', key='addreview_button', disabled=True):
+                st.toast("You are not allowed to review your own items.")
             
         st.divider()
 
