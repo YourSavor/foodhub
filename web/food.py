@@ -25,6 +25,8 @@ def refresh_foodstream(attrib, order):
             break
 
 def filters():
+    estab = state.selected_estab
+
     attrib = st.selectbox('Order by:', ['Name', 'Price', 'Rating'])
 
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
