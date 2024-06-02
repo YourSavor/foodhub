@@ -5,8 +5,8 @@ from db.db import establish_connection, close_connection
 # SQL queries
 insert_food_review_query = 'INSERT INTO reviews (user_id, food_id, rating, description) VALUES (%s, %s, %s, %s);'
 insert_establishment_review_query = 'INSERT INTO reviews (user_id, establishment_id, rating, description) VALUES (%s, %s, %s, %s);'
-update_review_query = 'UPDATE reviews SET user_id=%s, establishment_id=%s, food_id=%s, rating=%s, description=%s WHERE id=%s;'
-delete_review_query = 'UPDATE reviews SET is_deleted = TRUE WHERE id = %s;'
+update_review_query = 'UPDATE reviews SET user_id=%s, establishment_id=%s, food_id=%s, rating=%s, description=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s;'
+delete_review_query = 'UPDATE reviews SET is_deleted = TRUE, updated_at=CURRENT_TIMESTAMP WHERE id = %s;'
 view_reviews_by_establishment_query = 'SELECT * FROM reviews WHERE establishment_id = %s AND is_deleted = FALSE ORDER BY %s %s;'
 view_reviews_by_food_query = 'SELECT * FROM reviews WHERE food_id = %s AND is_deleted = FALSE ORDER BY %s %s;'
 view_review_query = 'SELECT * FROM reviews WHERE id = %s AND is_deleted = FALSE;'
