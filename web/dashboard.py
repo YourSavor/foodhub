@@ -8,21 +8,6 @@ import review
 
 state = st.session_state
 
-
-currUser = {
-    'id': '33bbf10e-cc0e-4669-8d9f-e06318a9b19d',
-    'username': 'test2',
-    'hashed_password': '$2b$12$a427s5rVOe7PHCFDWZm6q.HdFKk5Oog8OuDxcZSKTRFJQ68EH/8Ry',
-    'first_name': 'test',
-    'middle_name': 'test',
-    'last_name': 'test',
-    'created_at': '2024-06-01 13:22:40.094475+00',
-    'updated_at': None,
-    'is_deleted': False
-}
-
-state.user = currUser
-
 def dashboard():
     with st.sidebar:
         # Option menu for navigation
@@ -71,7 +56,7 @@ def myEstablishments():
 
 def myProfile():
     st.title('Profile')
-    st.json(currUser)
+    st.json(state.currUser)
 
 
 # CSS for full-width buttons
@@ -82,6 +67,3 @@ st.markdown("""
         }
     </style>
 """, unsafe_allow_html=True)
-
-if __name__ == "__main__":
-  dashboard()
