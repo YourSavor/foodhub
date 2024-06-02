@@ -56,7 +56,7 @@ def myEstablishments():
 
 def myProfile():
     st.title('Profile')
-    st.json(state.currUser)
+    st.json(state.user)
 
 
 # CSS for full-width buttons

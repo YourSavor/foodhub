@@ -6,7 +6,7 @@ import dashboard
 API_URL = "http://127.0.0.1:8000"
 
 def main():
-    if 'currUser' in st.session_state:
+    if 'user' in st.session_state:
        dashboard.dashboard()
        return
 
@@ -32,7 +32,7 @@ def signin():
     })
 
     if response.status_code == 200:
-      st.session_state.currUser = response.json().get("user")
+      st.session_state.user = response.json().get("user")
       st.session_state.page = 'stream'
       st.rerun()
     else:
