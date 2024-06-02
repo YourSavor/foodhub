@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException
+from datetime import datetime
+from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from db.db import establish_connection, close_connection
 from passlib.context import CryptContext
@@ -123,10 +125,14 @@ async def signin(user: UserSignInRequest):
     if not pwd_context.verify(user.password, user_dict["hashed_password"]):
         raise HTTPException(status_code=400, detail="Invalid username or password")
 
-    return {"message": "Successfully signed in", "user": user_dict}
+    for key, value in user_dict.items():
+      if isinstance(value, datetime):
+        user_dict[key] = value.isoformat()
+
+    return JSONResponse(status_code=200, content={"user": user_dict})
 
 @router.post("/signup")
-async def create_user(user: UserSignUpRequest):
+async def signup(user: UserSignUpRequest):
     connection, cursor = establish_connection()
     hashed_password = pwd_context.hash(user.password)
 
@@ -138,4 +144,4 @@ async def create_user(user: UserSignUpRequest):
     cursor.execute(insert_user, (user.username, hashed_password, user.first_name, user.middle_name, user.last_name))
     connection.commit()
     close_connection(connection, cursor)
-    return {"message": "User created successfully"}
+    return JSONResponse(status_code=200, content="success")

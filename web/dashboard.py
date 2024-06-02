@@ -89,4 +89,5 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-dashboard()
+if __name__ == "__main__":
+  dashboard()

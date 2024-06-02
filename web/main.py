@@ -1,59 +1,125 @@
 import requests
 import streamlit as st
-from streamlit_navigation_bar import st_navbar
+import streamlit.components.v1 as components
 
 API_URL = "http://127.0.0.1:8000"
 
 def main():
-    page = st_navbar(["Sign Up", "Sign In"])
-    st.write(page)
+  if 'page' not in st.session_state:
+      st.session_state.page = "Sign In"
 
-    if page == "Sign Up":
-        signup()
-    elif page == "Sign In":
-        signin()
+  if st.session_state.page == "Sign In":
+      signin()
+  else:
+      signup()
 
 def signin():
-    st.title("Sign In")
+  st.title("Sign In")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+  username = st.text_input("Username")
+  password = st.text_input("Password", type="password")
 
-    if st.button("Sign In"):
-        if 'users' in st.session_state and username in st.session_state.users:
-            user = st.session_state.users[username]
-            if user["password"] == password:
-                st.session_state.current_user = username
-                st.success("You have successfully signed in!")
-            else:
-                st.error("Incorrect password.")
-        else:
-            st.error("Username not found.")
+  if st.button("Sign In"):
+    response = requests.post(f"{API_URL}/users/signin", json={
+        "username": username,
+        "password": password
+    })
+
+    if response.status_code == 200:
+      st.session_state.current_user = response.json().get("user")
+      from dashboard import dashboard
+      dashboard()
+    else:
+        print(response.json())
+        st.error(response.json().get("detail"))
+
+
+  st.markdown(
+    """
+    <style>
+    button[kind="primary"] {
+        background: none!important;
+        border: none;
+        padding: 0!important;
+        color: black !important;
+        text-decoration: none;
+        cursor: pointer;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        text-decoration: none;
+        color: black !important;
+    }
+    button[kind="primary"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        color: black !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+  )
+
+  if st.button("Don't have an account? Register",  type="primary"):
+      st.session_state.page = "Sign Up"
+      st.experimental_rerun()
+
 
 def signup():
-    st.title("Sign Up")
+  st.title("Sign Up")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    first_name = st.text_input("First name")
-    middle_name = st.text_input("Middle name")
-    last_name = st.text_input("Last name")
+  username = st.text_input("Username")
+  password = st.text_input("Password", type="password")
+  first_name = st.text_input("First name")
+  middle_name = st.text_input("Middle name")
+  last_name = st.text_input("Last name")
 
-    if st.button("Sign Up"):
-        
-      response = requests.post(f"{API_URL}/users/signup", json={
-          "username": username,
-          "password": password,
-          "first_name": first_name,
-          "middle_name": middle_name,
-          "last_name": last_name
-      })
+  if st.button("Sign Up"):
+      
+    response = requests.post(f"{API_URL}/users/signup", json={
+        "username": username,
+        "password": password,
+        "first_name": first_name,
+        "middle_name": middle_name,
+        "last_name": last_name
+    })
 
-      if response.status_code == 201:
-          st.success("You have successfully signed up!")
-          st.info("Go to Sign In page to log in.")
-      else:
-          st.error(response.json().get("message", "An error occurred"))
+    if response.status_code == 200:
+        st.success("You have successfully signed up!")
+        st.info("Go to Sign In page to log in.")
+    else:
+        print(response.json())
+        st.error(response.json().get("detail"))
+
+  st.markdown(
+    """
+    <style>
+    button[kind="primary"] {
+        background: none!important;
+        border: none;
+        padding: 0!important;
+        color: black !important;
+        text-decoration: none;
+        cursor: pointer;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        text-decoration: none;
+        color: black !important;
+    }
+    button[kind="primary"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        color: black !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+  )
+
+  if st.button("Already have an account? Sign In", type="primary"):
+    st.session_state.page = "Sign In"
+    st.experimental_rerun()
 
 if __name__ == "__main__":
     main()
