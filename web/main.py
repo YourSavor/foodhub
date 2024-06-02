@@ -1,24 +1,23 @@
 import requests
 import streamlit as st
 
-from dashboard import establishments, myEstablishments, myProfile
+import dashboard
 
 API_URL = "http://127.0.0.1:8000"
 
 def main():
-  if 'page' not in st.session_state:
-      st.session_state.page = "Sign In"
+    if 'currUser' in st.session_state:
+       dashboard.dashboard()
+       return
 
-  if st.session_state.page == "Sign In":
-      signin()
-  elif st.session_state.page == "Sign Up":
-      signup()
-  elif st.session_state.page == 'Establishments':
-      establishments()
-  elif st.session_state.page == 'My Establishments':
-      myEstablishments()
-  elif st.session_state.page == 'Profile':
-      myProfile()
+    if 'page' not in st.session_state:
+        st.session_state.page = "Sign In"
+
+    if st.session_state.page == "Sign In":
+        signin()
+    elif st.session_state.page == "Sign Up":
+        signup()
+  
 
 def signin():
   st.title("Sign In")
@@ -33,8 +32,9 @@ def signin():
     })
 
     if response.status_code == 200:
-      st.session_state.current_user = response.json().get("user")
-      st.session_state.page = 'Establishments'
+      st.session_state.currUser = response.json().get("user")
+      st.session_state.page = 'stream'
+      st.rerun()
     else:
         print(response.json())
         st.error(response.json().get("detail"))
