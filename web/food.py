@@ -251,5 +251,3 @@ def food_add():
                 st.toast(f"{name} added!")
             else:
                 st.error(f"Can't add {name}!")
-
-
