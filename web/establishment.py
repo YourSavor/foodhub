@@ -5,8 +5,7 @@ from datetime import datetime
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
-def refresh_stream(order_by, sort_order):
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
+def refresh_stream(order_by, order):
     response = requests.get(f'{API_URL}/establishments/all/{order}/{order_by}')
 
     if response.status_code != 200:
@@ -27,11 +26,24 @@ def estab_stream():
     st.title('Establishments')
     name = st.text_input('Search:')
     order_by = st.selectbox('Order by:', ['Name', 'Rating'])
+
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    
+    order = 'asc' if sort_order == 'Ascending' else 'desc'
+
+    high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
+
     st.divider()
 
-    refresh_stream(order_by, sort_order)
+    if high_only == 'All':
+        refresh_stream(order_by, order)
+    else:
+        response = requests.get(f'{API_URL}/establishments/high/{order}')
+
+        if response.status_code != 200:
+            st.error("Error Fetching establishments!")
+        
+        state.stream = response.json()['establishments']
+
 
     if 'stream' not in state:
         return
@@ -48,7 +60,7 @@ def estab_info():
 
     with col1:
         if st.button('←', help="Go Back"):
-            refresh_stream('name', 'Ascending')
+            refresh_stream('name', 'asc')
             state.page = 'stream'
             st.rerun()
 
@@ -84,7 +96,7 @@ def estab_info():
                 })
 
                 if (response.status_code == 200):
-                    refresh_stream('name', 'Ascending')
+                    refresh_stream('name', 'asc')
                     state.page = 'stream'
                     st.rerun()
                 else:
@@ -103,10 +115,11 @@ def myestab_stream():
     
     order_by = st.selectbox('Order by:', ['Name', 'Rating'])
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-  
+    order = 'asc' if sort_order == 'Ascending' else 'desc'
+
     st.divider()
 
-    refresh_stream(order_by, sort_order)
+    refresh_stream(order_by, order)
 
     if 'stream' not in state:
         return
@@ -126,7 +139,7 @@ def estab_edit():
 
     with col1:
         if st.button('←', help="Go Back"):
-            refresh_stream('name', 'Ascending')
+            refresh_stream('name', 'asc')
             state.page = 'estab_info'
             st.rerun()
     with col2:
@@ -148,7 +161,7 @@ def estab_edit():
         })
 
         if response.status_code == 200:
-            refresh_stream('name', 'Ascending')
+            refresh_stream('name', 'asc')
             state.page = 'estab_info'
             st.rerun()
         else:
@@ -160,7 +173,7 @@ def estab_add():
 
     with col1:
         if st.button('←', help="Go Back"):
-            refresh_stream('name', 'Ascending')
+            refresh_stream('name', 'asc')
             state.page = 'stream'
             st.rerun()
             
