@@ -127,5 +127,13 @@ def signup():
     st.session_state.page = "Sign In"
     st.experimental_rerun()
 
+st.markdown("""
+    <style>
+        div.stButton > button {
+            width: 100% !important;
+        }
+    </style>
+""", unsafe_allow_html=True)
+
 if __name__ == "__main__":
     main()
