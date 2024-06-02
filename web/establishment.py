@@ -6,6 +6,7 @@ API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
 import food
+import review
 
 def refresh_stream(attrib, order):
     response = requests.get(f'{API_URL}/establishments/all/{order}/{attrib}')
@@ -113,10 +114,16 @@ def estab_info():
         else:
             if st.button('Add A Review', key='addreview_button', disabled=True):
                 st.toast("You are not allowed to review your own items.")
-            
+
         st.divider()
 
         food.food_list()
+
+        st.divider()
+
+    
+        review.review_estab_list()
+        
    
 
 def myestab_stream():

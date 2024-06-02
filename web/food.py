@@ -5,6 +5,8 @@ from datetime import datetime
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
+import review
+
 def refresh_foodstream(attrib, order):
     estab = state.selected_estab
 
@@ -107,7 +109,7 @@ def food_list():
         else:
             filters()
 
-        st.divider()
+    
 
         if 'foodstream' not in state:
             return
@@ -185,6 +187,10 @@ def food_info():
         else:
             if st.button('Add A Review', key='addreview_button', disabled=True):
                 st.toast("You are not allowed to review your own items.")
+
+        st.divider()
+
+        review.review_food_list()
 
 def food_edit():
     col1, col2 = st.columns([0.5, 10])

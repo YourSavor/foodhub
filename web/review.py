@@ -32,3 +32,22 @@ def review_add_food():
 
     with col2:
         st.title(f"Add Review {food['name']}")
+
+def review_estab_list():
+
+    st.subheader("Reviews Estab")
+    col1, col2 = st.columns([0.25, 10])
+
+    with col2: 
+        
+        st.text("UNDER CONSTRUCTION")
+
+
+def review_food_list():
+
+    st.subheader("Reviews Food")
+    col1, col2 = st.columns([0.25, 10])
+
+    with col2: 
+        
+        st.text("UNDER CONSTRUCTION")
