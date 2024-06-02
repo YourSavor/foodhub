@@ -4,7 +4,11 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from db.db import establish_connection, close_connection
 from passlib.context import CryptContext
+import logging
 
+# Setting up logging
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 select_user = 'SELECT * FROM users;'
@@ -13,8 +17,7 @@ insert_user = 'INSERT INTO users (username, hashed_password, first_name, middle_
 update_user_query = 'UPDATE users SET username=%s, first_name=%s, middle_name=%s, last_name=%s WHERE id = %s;'
 search_user_name = 'SELECT * FROM users WHERE name LIKE "% %s %";'
 search_user_id = 'SELECT * FROM users WHERE id = %s;'
-search_user_username = 'SELECT * FROM users WHERE username=%s;'
-
+search_user_username = "SELECT * FROM users WHERE username=%s ;"
 
 router = APIRouter(prefix="/users", tags=["users"])
 
@@ -114,9 +117,13 @@ async def user_transactions(user_id: str):
 @router.post("/signin")
 async def signin(user: UserSignInRequest):
     connection, cursor = establish_connection()
+    logger.debug(f"Executing query: {search_user_username} with parameter: {user.username}")
+    
     cursor.execute(search_user_username, (user.username,))
     user_data = cursor.fetchone()
     close_connection(connection, cursor)
+
+    logger.debug(f"User data from database: {user_data}")
 
     if not user_data:
         raise HTTPException(status_code=400, detail="Invalid username or password")
@@ -126,10 +133,11 @@ async def signin(user: UserSignInRequest):
         raise HTTPException(status_code=400, detail="Invalid username or password")
 
     for key, value in user_dict.items():
-      if isinstance(value, datetime):
-        user_dict[key] = value.isoformat()
+        if isinstance(value, datetime):
+            user_dict[key] = value.isoformat()
 
     return JSONResponse(status_code=200, content={"user": user_dict})
+
 
 @router.post("/signup")
 async def signup(user: UserSignUpRequest):
