@@ -5,6 +5,7 @@ def authenticated_menu():
   st.sidebar.page_link("pages/profile.py", label="Profile")
   st.sidebar.page_link("pages/establishments.py", label="Establishments")
   st.sidebar.page_link("pages/foods.py", label="Foods")
+  st.sidebar.page_link("pages/signout.py", label="Sign out")
 
 def unauthenticated_menu():
   st.sidebar.page_link("app.py", label="Auth")

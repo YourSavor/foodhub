@@ -124,7 +124,7 @@ def signup():
 from menu import menu
 
 if st.session_state.user is not None:
-  menu()
+  st.switch_page("pages/profile.py")
 
 if st.session_state.user is None:
   authentication()
