@@ -221,7 +221,7 @@ async def view_recent_reviews_by_establishment(establishment_id: str, attribute:
 async def view_recent_reviews_by_food(food_id: str, attribute: str, order: str):
     connection, cursor = establish_connection()
 
-    query = f"{view_reviews_recent_by_establishment_query} ORDER BY {attribute} {order}, r.updated_at {order};"
+    query = f"{view_reviews_recent_by_food_query} ORDER BY {attribute} {order}, r.updated_at {order};"
 
     cursor.execute(query, (food_id,))
     reviews = cursor.fetchall()
