@@ -151,12 +151,13 @@ def review_estab_list():
             ---
             - **Rating:** {review['rating']}  
             - **Description:** {review['description']}  
-            - **Created:** {formatted_created_at}"""
+            - **Created:** {formatted_created_at}
+            """
 
             if review['updated_at']:
                 updated_at_dt = datetime.strptime(review['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
                 formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
-                review_info += f"- **Updated:** {formatted_updated_at}"
+                review_info = f"""{review_info}- **Updated:** {formatted_updated_at}"""
 
             st.info(review_info)
 
