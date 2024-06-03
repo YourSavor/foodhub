@@ -21,15 +21,18 @@ import components.establishment as et
 
 def establishments():
     if 'page' in state and state.page == 'estab/info':
-      et.estab_info()
+        et.estab_info()
     elif 'page' in state and state.page == 'estab/food/info':
-      fd.food_info()
+        fd.food_info()
     elif 'page' in state and state.page == 'estab/review/add':
-      rw.review_add_estab()
+        rw.review_add_estab()
     elif 'page' in state and state.page == 'food/review/add':
-      rw.review_add_food()
+        rw.review_add_food()
+    elif 'page' in state and state.page == 'estab/edit':
+        et.estab_edit()  # Call the function to handle editing establishments
     else:
-      et.estab_stream()
+        et.estab_stream()
+
       
 menu_with_redirect()
 establishments()
