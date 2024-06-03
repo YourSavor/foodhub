@@ -95,7 +95,6 @@ def signup():
         if response.status_code == 200:
             st.success("You have successfully signed up!")
             st.info("Go to Sign In page to log in.")
-            st.session_state.user = response.json().get('user')
         else:
             print(response.json())
             st.error(response.json().get("detail"))
