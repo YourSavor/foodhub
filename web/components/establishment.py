@@ -71,7 +71,7 @@ def estab_stream():
 
         estab = f"""    
             <h3> {establishment['name']} </h3>
-            <div style="line-height: 1.2; margin-bottom: 10px;">
+            <div style="line-height: 1.2; margin-bottom: 0px;">
                 <strong>Rating:</strong> {establishment['rating']}<br>
                 <strong>Location:</strong> {establishment['location']}
             </div>
@@ -111,6 +111,8 @@ def estab_stream():
             <style>
                 div.stButton > button {
                     width: auto !important;
+                    padding: 0px;
+                    margin: 0 px;
                 }
             </style>
         """, unsafe_allow_html=True)
@@ -119,10 +121,6 @@ def estab_stream():
             st.session_state['selected_estab'] = establishment
             st.session_state['page'] = 'estab/info'
             st.rerun()
-
-
-
-
 
 
 def clicked_estab(establishment):
@@ -171,9 +169,11 @@ def estab_info():
     estab_info = f"""
         **{estab['name']}**
         ---
-        - **Location:** {estab['location']}
-        - **Rating:** {estab['rating']}
-        - **Added:** {formatted_created_at}
+        <div style="line-height: 1.2; margin-bottom: 30px;">
+            <strong>Location:</strong> {estab['location']}<br>
+            <strong>Rating:</strong> {estab['rating']}<br>
+            <strong>Added:</strong> {formatted_created_at}
+        </div>
         """
 
     if estab['updated_at']:
@@ -181,7 +181,7 @@ def estab_info():
         formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
         estab_info = f"{estab_info} - **Updated:** {formatted_updated_at}"
 
-    st.info(estab_info)
+    st.markdown(estab_info, unsafe_allow_html=True)
 
     if (state.page == 'estab/my/info'):
         if st.button('Edit', key='edit_button'):

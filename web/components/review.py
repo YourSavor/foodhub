@@ -135,7 +135,7 @@ def review_estab_list():
         'Updated At': 'updated_at'
     }
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         attrib = st.selectbox('Order by:', ['Username', 'Rating', 'Created At'], index = 2, key = 'review_attrib')
@@ -143,8 +143,8 @@ def review_estab_list():
     with col2:  
         state.order = st.selectbox('', ['Ascending', 'Descending'], key = 'review_order')
         state.order = 'asc' if state.order == 'Ascending' else 'desc'
-
-    recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
+    with col3:
+        recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
 
     if (recent == 'All'):
         refresh_estab_reviews(state.attrib, state.order)
@@ -222,6 +222,10 @@ def refresh_food_reviews(attrib, order):
     fd.refresh_foodstream('name', 'asc')
     state.rev_food_stream = response.json()['reviews']
 
+def format_datetime(dt_str):
+    dt = datetime.strptime(dt_str, '%Y-%m-%dT%H:%M:%S.%f+00:00')
+    return dt.strftime('%B %d, %Y | %H:%M')
+
 def review_food_list():
     food = state.selected_food
 
@@ -234,7 +238,7 @@ def review_food_list():
         'Updated At': 'updated_at'
     }
 
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         attrib = st.selectbox('Order by:', ['Username', 'Rating', 'Created At'], index = 2, key = 'review_attrib')
@@ -242,8 +246,8 @@ def review_food_list():
     with col2:  
         state.order = st.selectbox('', ['Ascending', 'Descending'], key = 'review_order')
         state.order = 'asc' if state.order == 'Ascending' else 'desc'
-
-    recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
+    with col3:
+        recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
 
     if (recent == 'All'):
         refresh_food_reviews(state.attrib, state.order)
@@ -263,21 +267,46 @@ def review_food_list():
             created_at_dt = datetime.strptime(review['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
             formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
 
-            # Building review information
             review_info = f"""
-            **{review['username']}**
-            ---
-            - **Rating:** {review['rating']}  
-            - **Description:** {review['description']}  
-            - **Created:** {formatted_created_at}
+                <div class="review-card">
+                    <strong>{review['username']}</strong>
+                    <hr>
+                    <p><strong>Rating:</strong> {review['rating']}</p>
+                    <p><strong>Description:</strong> {review['description']}</p>
+                    <p><strong>Created:</strong> {formatted_created_at}</p>
             """
 
             if review['updated_at']:
-                updated_at_dt = datetime.strptime(review['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
-                formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
-                review_info = f"""{review_info}- **Updated:** {formatted_updated_at}"""
 
-            st.info(review_info)
+                formatted_updated_at = format_datetime(review['updated_at'])
+                review_info += f"""<p><strong>Updated:</strong> {formatted_updated_at}</p>"""
+
+            review_info += "</div>"
+            
+            review_card_style = """
+                <style>
+                .review-card {
+                    border: 1px solid #ddd;
+                    border-radius: 8px;
+                    padding: 16px;
+                    margin-bottom: 16px;
+                    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+                    background-color: #fff;
+                }
+                .review-card hr {
+                    border: none;
+                    border-top: 1px solid #ddd;
+                    margin: 8px 0;
+                }
+                .review-card p {
+                    margin: 4px 0;
+                    font-size: 14px;
+                    color: #333;
+                }
+                </style>
+            """
+            st.markdown(review_card_style, unsafe_allow_html=True)
+            st.markdown(review_info, unsafe_allow_html=True)
 
             if (state.user['id'] != review['user_id']):
                 continue

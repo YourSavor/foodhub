@@ -28,7 +28,7 @@ def refresh_foodstream(attrib, order):
 
 def filters():
     estab = state.selected_estab
-    col1, col2 = st.columns(2)
+    col1, col2, col3 = st.columns(3)
 
     with col1:
         attrib = st.selectbox('Order by:', ['Name', 'Price', 'Rating'])
@@ -36,11 +36,13 @@ def filters():
     with col2:  
         sort_order = st.selectbox(' ', ['Ascending', 'Descending'])
     
+    with col3:
+        type_filter = st.selectbox('Show:', ['All', 'Meat', 'Vegetable', 'Others'])
+
     order = 'asc' if sort_order == 'Ascending' else 'desc'
 
     refresh_foodstream(attrib, order)
 
-    type_filter = st.selectbox('Show:', ['All', 'Meat', 'Vegetable', 'Others'])
     if (type_filter == 'Others'):
         others_type = st.text_input('Food Type:')
 
@@ -49,24 +51,26 @@ def filters():
         else:
             type_filter = 'All'
 
-    filter_price = st.toggle("Price Filter", value = False)
 
-    if (type_filter != 'All') and not filter_price:
+    if (type_filter != 'All'):
         response = requests.get(f"{API_URL}/foods/all/{estab['id']}/{type_filter}/{attrib}/{order}")
 
         if response.status_code != 200:
             st.error("Error Fetching foods!")
         
         state.foodstream = response.json()['foods']
-    elif (type_filter == 'All') and filter_price:
-
+    elif (type_filter == 'All'):
         max_price = 0.00
 
         if len(state.foodstream) != 0:
             max_price = max(food['price'] for food in state.foodstream)
 
-        low_price = st.number_input('Min:', min_value=0.00, format="%.2f")
-        high_price = st.number_input('Max:', min_value=0.00, value=max_price, format="%.2f")
+
+        col1, col2, = st.columns(2)
+        with col1:
+            low_price = st.number_input('Min:', min_value=0.00, format="%.2f")
+        with col2:
+            high_price = st.number_input('Max:', min_value=0.00, value=max_price, format="%.2f")
 
         response = requests.get(f"{API_URL}/foods/all/{estab['id']}/{low_price}/{high_price}/{attrib}/{order}")
 
@@ -75,10 +79,13 @@ def filters():
         
         state.foodstream = response.json()['foods']
 
-    elif (type_filter != 'All') and filter_price:
+    elif (type_filter != 'All'):
         max_price = max(food['price'] for food in state.foodstream)
-        low_price = st.number_input('Min:', min_value=0.00, format="%.2f")
-        high_price = st.number_input('Max:', min_value=0.00, value=max_price, format="%.2f")
+        col1, col2, = st.columns(2)
+        with col1:
+            low_price = st.number_input('Min:', min_value=0.00, format="%.2f")
+        with col2:
+            high_price = st.number_input('Max:', min_value=0.00, value=max_price, format="%.2f")
 
         response = requests.get(f"{API_URL}/foods/all/{estab['id']}/{type_filter}/{low_price}/{high_price}/{attrib}/{order}")
 
