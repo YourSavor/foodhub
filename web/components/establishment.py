@@ -59,69 +59,96 @@ def estab_stream():
                 st.rerun()
 
 def estab_info():
-    col1, col2 = st.columns([0.5, 10])
 
-    with col1:
-        if st.button('←', help="Go Back"):
-            refresh_stream('name', 'asc')
-            state.page = 'stream'
+
+    st.markdown(
+        """
+        <style>
+        button[kind="primary"] {
+            background: none!important;
+            border: none;
+            padding: 0!important;
+            color: black !important;
+            text-decoration: none;
+            cursor: pointer;
+            border: none !important;
+        }
+        button[kind="primary"]:hover {
+            text-decoration: none;
+            color: black !important;
+        }
+        button[kind="primary"]:focus {
+            outline: none !important;
+            box-shadow: none !important;
+            color: black !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    if st.button('←', help="Go Back", type="primary"):
+        refresh_stream('name', 'asc')
+        state.page = 'stream'
+        st.rerun()
+
+    estab = state.selected_estab
+
+    created_at_dt = datetime.strptime(estab['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+    formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
+
+    estab_info = f"""
+        **{estab['name']}**
+        ---
+        - **Location:** {estab['location']}
+        - **Rating:** {estab['rating']}
+        - **Added:** {formatted_created_at}
+        """
+
+    if estab['updated_at']:
+        updated_at_dt = datetime.strptime(estab['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+        formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
+        estab_info = f"{estab_info} - **Updated:** {formatted_updated_at}"
+
+    st.info(estab_info)
+
+    if (state.page == 'estab/my/info'):
+        if st.button('Edit', key='edit_button'):
+            state.page = 'estab/my/edit'
             st.rerun()
 
-    with col2:
-        estab = state.selected_estab
+        if st.button('Delete', key='delete_button'):
+            response = requests.put(f"{API_URL}/establishments/delete", json={
+                'id': estab['id'],
+            })
 
-        created_at_dt = datetime.strptime(estab['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
-        formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
-
-        estab_info = f"""
-            **{estab['name']}**
-            ---
-            - **Location:** {estab['location']}
-            - **Rating:** {estab['rating']}
-            - **Added:** {formatted_created_at}
-            """
-        
-        if estab['updated_at']:
-            updated_at_dt = datetime.strptime(estab['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
-            formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
-            estab_info = f"{estab_info} - **Updated:** {formatted_updated_at}"
-
-        st.info(estab_info)
-
-        if state.page == 'estab/my/info':
-            if st.button('Edit', key='edit_button'):
-                state.page = 'estab/my/edit'
+            if (response.status_code == 200):
+                refresh_stream('name', 'asc')
+                st.toast(f"{estab['name']} deleted!")
+                state.page = 'stream'
                 st.rerun()
+            else:
+                st.error(f"Can't delete {estab['name']}!")
 
-            if st.button('Delete', key='delete_button'):
-                response = requests.put(f"{API_URL}/establishments/delete", json={
-                    'id': estab['id'],
-                })
+    if (state.page == 'estab/info' and state.user['id'] != estab['user_id']):
+        if st.button('Add A Review', key='addreview_button'):
+            state.page = 'estab/review/add'
+            st.rerun()
+    else:
+        if st.button('Add A Review', key='addreview_button', disabled=True):
+            st.toast("You are not allowed to review your own items.")
 
-                if response.status_code == 200:
-                    refresh_stream('name', 'asc')
-                    st.toast(f"{estab['name']} deleted!")
-                    state.page = 'stream'
-                    st.rerun()
-                else:
-                    st.error(f"Can't delete {estab['name']}!")
+    st.divider()
 
-        if state.page == 'estab/info' and state.user['id'] != estab['user_id']:
-            if st.button('Add A Review', key='addreview_button'):
-                state.page = 'estab/review/add'
-                st.rerun()
-        else:
-            if st.button('Add A Review', key='addreview_button', disabled=True):
-                st.toast("You are not allowed to review your own items.")
+    fd.food_list()
 
-        st.divider()
+    st.divider()
 
-        fd.food_list()
 
-        st.divider()
-
-        rw.review_estab_list()
+    rw.review_estab_list()
         
+   
+
 def myestab_stream():
     st.title('My Establishments')
 
@@ -150,69 +177,114 @@ def myestab_stream():
                 st.rerun()
 
 def estab_edit():
-    col1, col2 = st.columns([0.5, 10])
     estab = state.selected_estab
 
-    with col1:
-        if st.button('←', help="Go Back"):
+    st.markdown(
+    """
+    <style>
+    button[kind="primary"] {
+        background: none!important;
+        border: none;
+        padding: 0!important;
+        color: black !important;
+        text-decoration: none;
+        cursor: pointer;
+        border: none !important;
+    }
+    button[kind="primary"]:hover {
+        text-decoration: none;
+        color: black !important;
+    }
+    button[kind="primary"]:focus {
+        outline: none !important;
+        box-shadow: none !important;
+        color: black !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True,
+    )
+
+    if st.button('←', help="Go Back", type="primary"):
+        refresh_stream('name', 'asc')
+        state.page = 'estab/my/info'
+        st.rerun()
+
+    st.title(f"Edit {estab['name']}")
+
+    name = st.text_input('New Name:', value=estab['name'])
+    location = st.text_input('New Location:', value=estab['location'])
+
+    if st.button('Submit'):
+
+        if not (name.strip() and location.strip()):
+            st.error('Name and location cannot be empty.')
+
+        response = requests.put(f"{API_URL}/establishments/update", json={
+            'id': estab['id'],
+            'name': name,
+            'location': location,
+        })
+
+        if response.status_code == 200:
             refresh_stream('name', 'asc')
-            state.page = 'estab/my/info'
+            state.page = 'estab/info'
+            st.toast(f"{estab['name']} edited!")
             st.rerun()
-    with col2:
-        
-        st.title(f"Edit {estab['name']}")
-
-        name = st.text_input('New Name:', value=estab['name'])
-        location = st.text_input('New Location:', value=estab['location'])
-
-        if st.button('Submit'):
-            
-            if not (name.strip() and location.strip()):
-                st.error('Name and location cannot be empty.')
-
-            response = requests.put(f"{API_URL}/establishments/update", json={
-                'id': estab['id'],
-                'name': name,
-                'location': location,
-            })
-
-            if response.status_code == 200:
-                refresh_stream('name', 'asc')
-                state.page = 'estab/info'
-                st.toast(f"{estab['name']} edited!")
-                st.rerun()
-            else:
-                st.error(f"Can't edit {estab['name']}!")
+        else:
+            st.error(f"Can't edit {estab['name']}!")
 
 def estab_add():
     
-    col1, col2 = st.columns([0.5, 10])
+    st.markdown(
+        """
+        <style>
+        button[kind="primary"] {
+            background: none!important;
+            border: none;
+            padding: 0!important;
+            color: black !important;
+            text-decoration: none;
+            cursor: pointer;
+            border: none !important;
+        }
+        button[kind="primary"]:hover {
+            text-decoration: none;
+            color: black !important;
+        }
+        button[kind="primary"]:focus {
+            outline: none !important;
+            box-shadow: none !important;
+            color: black !important;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
 
-    with col1:
-        if st.button('←', help="Go Back"):
-            refresh_stream('name', 'asc')
-            state.page = 'stream'
-            st.rerun()
-            
-    with col2:
-        st.title('Add Establishment')
+    if st.button('←', help="Go Back", type="primary"):
+        refresh_stream('name', 'asc')
+        state.page = 'stream'
+        st.rerun()
+        
+    st.title('Add Establishment')
 
-        name = st.text_input('Enter Establishment Name:')
-        location = st.text_input('Enter Establishment Location:')
+    name = st.text_input('Enter Establishment Name:')
+    location = st.text_input('Enter Establishment Location:')
 
-        if st.button('Submit'):
-            
-            if not (name.strip() and location.strip()):
-                st.error('Name and location cannot be empty.')
-            
-            response = requests.post(f"{API_URL}/establishments/insert", json={
-                'user_id': state.user['id'],
-                'name': name,
-                'location': location,
-            })
+    if st.button('Submit'):
+        
+        if not (name.strip() and location.strip()):
+            st.error('Name and location cannot be empty.')
+        
+        response = requests.post(f"{API_URL}/establishments/insert", json={
+            'user_id': state.user['id'],
+            'name': name,
+            'location': location,
+        })
 
-            if (response.status_code == 200):
-                st.toast(f"{name} added to establishments!")
-            else:
-                st.error(f"Can't add {name}!")
+        if (response.status_code == 200):
+            st.toast(f"{name} added to establishments!")
+        else:
+            st.error(f"Can't add {name}!")
         
