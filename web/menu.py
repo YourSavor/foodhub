@@ -1,6 +1,5 @@
 import streamlit as st
 
-
 def authenticated_menu():
   st.sidebar.page_link("pages/profile.py", label="Profile")
   st.sidebar.page_link("pages/establishments.py", label="Establishments")

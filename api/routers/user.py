@@ -1,5 +1,5 @@
 from datetime import datetime
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from db.db import establish_connection, close_connection
@@ -8,7 +8,8 @@ from passlib.context import CryptContext
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 delete_user_establishments_query = """
-    UPDATE establishments SET is_deleted = true WHERE user_id = %s;
+    UPDATE establishments SET is_deleted = true 
+    WHERE user_id = %s;
 """
 
 delete_user_foods_query = """
@@ -18,9 +19,7 @@ delete_user_foods_query = """
 
 delete_user_reviews_query = """
     UPDATE reviews SET is_deleted = true 
-    WHERE user_id = %s 
-    OR establishment_id IN (SELECT id FROM establishments WHERE user_id = %s) 
-    OR food_id IN (SELECT id FROM foods WHERE establishment_id IN (SELECT id FROM establishments WHERE user_id = %s));
+    WHERE user_id = %s;
 """
 
 recompute_establishment_ratings_query = """
@@ -80,8 +79,6 @@ def get_columns(cursor):
 @router.get('')
 async def get_user():
     connection, cursor = establish_connection()
-
-    # shalle check first if user exist
     
     cursor.execute(select_user)
     user_data = cursor.fetchall()
@@ -193,7 +190,7 @@ async def signup(user: UserSignUpRequest):
     close_connection(connection, cursor)
     return JSONResponse(status_code=200, content="success")
 
-@router.delete('/delete')
+@router.post('/delete')
 async def delete_user(request: DeleteUserRequest):
     connection, cursor = establish_connection()
     
