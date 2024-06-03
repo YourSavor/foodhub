@@ -144,7 +144,6 @@ def review_estab_list():
 
     for review in state.rev_estab_stream:
         with st.container():
-            st.divider()
             created_at_dt = datetime.strptime(review['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
             formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
 
@@ -192,8 +191,6 @@ def review_estab_list():
                 if st.button('Cancel', key=f"cancel_edit_{review['id']}"):
                     state.show_edit = False
                     st.rerun()
-
-            st.divider()
 
 
 
