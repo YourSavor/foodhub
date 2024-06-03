@@ -17,10 +17,6 @@ st.markdown("""
 def profile():
     pf.profile_info()
 
-        
-
-
-
 menu_with_redirect()
 profile()
 

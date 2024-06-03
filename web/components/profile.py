@@ -17,8 +17,11 @@ def refresh_profile():
 
 def profile_info():
     refresh_profile()
-
     user = state.user
+
+    if ('show_edit_profile' in state and state.show_edit_profile):
+        edit_section()
+        return
 
     full_name = f"{user['first_name']} {user['middle_name']} {user['last_name']}"
     created_at_dt = datetime.strptime(user['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
@@ -28,28 +31,28 @@ def profile_info():
     profile_info = f"""
         **{full_name}**
         ---
-        - **Username:** {user['username']}
-        - **Joined:** {formatted_created_at}
-        """
+        <div style="line-height: 1.2; margin-bottom: 30px;">
+            <strong>Username:</strong> {user['username']}<br>
+            <strong>Joined:</strong> {formatted_created_at}
+        </div>
+    """
     
-    st.info(profile_info)
+    st.markdown(profile_info, unsafe_allow_html=True)
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if (('show_edit_profile' not in state) or 
+            ('show_edit_profile' in state and not state.show_edit_profile)):
+            if (st.button('Edit Profile', key=f"editprofile_{user['id']}")):
+                state.show_edit_profile = True
+                st.rerun()
+            
+    with col2:
+        if (st.button('Delete My Account', key=f"deleteprofile_{user['id']}")):
+            response = requests.delete(f"{API_URL}/users/delete", json={"user_id": user['id']})
 
-    if (('show_edit_profile' not in state) or 
-        ('show_edit_profile' in state and not state.show_edit_profile)):
-        if (st.button('Edit Profile', key=f"editprofile_{user['id']}")):
-            state.show_edit_profile = True
-            st.rerun()
-
-    if ('show_edit_profile' in state and state.show_edit_profile):
-        edit_section()
-
-    st.divider()
-
-    if (st.button('Delete My Account', key=f"deleteprofile_{user['id']}")):
-        response = requests.delete(f"{API_URL}/users/delete", json={"user_id": user['id']})
-
-        if response.status_code == 200:
-            st.success("Your account and all associated data have been deleted.")
+            if response.status_code == 200:
+                st.success("Your account and all associated data have been deleted.")
 
 def edit_section():
     user = state.user
@@ -69,25 +72,27 @@ def edit_section():
     if (st.toggle('Update Password')):
         new_password = st.text_input("New Password", type="password")
 
-    if (st.button('Confirm Changes', key=f"confirmeditprofile_{user['id']}")):
-        update_account(new_username, new_first, new_middle, new_last, new_password)
-
-      
-
-    if (st.button('Cancel', key=f"canceleditprofile_{user['id']}")):
-        state.show_edit_profile = False
-        st.rerun()
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        if (st.button('Confirm Changes', key=f"confirmeditprofile_{user['id']}")):
+            update_account(new_username, new_first, new_middle, new_last, new_password)
+    
+    with col2:
+        if (st.button('Cancel', key=f"canceleditprofile_{user['id']}")):
+            state.show_edit_profile = False
+            st.rerun()
 
 def update_account(new_username, new_first, new_middle, new_last, new_password):
     user = state.user
 
     if not (new_username.strip() and new_first.strip() 
         and new_middle.strip() and new_last.strip()):
-        st.error("Please fill all fields!")
+        st.toas("Please fill all fields!")
         return
 
     if (new_password != None and not(new_password.strip())):
-        st.error("Password can't be empty!")
+        st.toas("Password can't be empty!")
         return
     
     if (new_password == None):
@@ -103,10 +108,10 @@ def update_account(new_username, new_first, new_middle, new_last, new_password):
     })
 
     if (response.status_code == 200):
-        st.toast('Success!')
+        st.toast('Account updated successfully')
         refresh_profile()
         state.show_edit_profile = False
         st.rerun()
     else:
-        st.error("Failed updating your account.")
+        st.toas("Failed updating your account")
 
