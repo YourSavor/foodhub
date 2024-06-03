@@ -64,50 +64,69 @@ def review_add_food():
                 st.rerun()
             else:
                 st.error("Failed to add review.")
+                
+
+def delete_review(review_id):
+    response = requests.put(f"{API_URL}/reviews/delete/{review_id}")
+    if response.status_code == 200:
+        st.success("Review deleted successfully!")
+    else:
+        st.error("Failed to delete review.")
+
+
+def edit_review(review_id, new_rating, new_description):
+    response = requests.put(f"{API_URL}/reviews/update", json={
+        'id': review_id,
+        'rating': new_rating,
+        'description': new_description
+    })
+    if response.status_code == 200:
+        st.success("Review updated successfully!")
+    else:
+        st.error("Failed to update review.")
+
 
 def review_estab_list():
     estab = state.selected_estab
 
     st.subheader(f"Reviews for {estab['name']}")
     
-    url = f"{API_URL}/reviews/establishment/{estab['id']}/rating/desc"
-    response = requests.get(url)
+    # Fetch reviews from the API
+    response = requests.get(f"{API_URL}/reviews/establishment/{estab['id']}/rating/desc")
     
     if response.status_code != 200:
-        st.error(f"Failed to fetch reviews from {url}. Status code: {response.status_code}")
+        st.error("Failed to fetch reviews.")
         return
 
-    try:
-        reviews = response.json().get('reviews', [])
-        if not reviews:
-            st.info("No reviews available for this establishment.")
-        else:
-            for review in reviews:
-                with st.container():
-                    st.write(f"**Rating:** {review['rating']}")
-                    st.write(f"**Description:** {review['description']}")
-                    st.write(f"**Date:** {review['created_at']}")
+    reviews = response.json().get('reviews', [])
 
-                    # Add edit button
-                    if st.button('Edit'):
-                        # Handle edit functionality here
-                        # Display form to edit review details
-                        # Send request to API to update review
-                        # Update UI accordingly
-                        pass
+    if not reviews:
+        st.info("No reviews available for this establishment.")
+    else:
+        for review in reviews:
+            with st.container():
+                st.write(f"**Rating:** {review['rating']}")
+                st.write(f"**Description:** {review['description']}")
+                st.write(f"**Date:** {review['created_at']}")
+                
+                # Add edit button
+                if st.button('Edit'):
+                    new_rating = st.slider("New Rating", 1, 5, review['rating'])
+                    new_description = st.text_area("New Description", value=review['description'])
+                    
+                    # Prompt user to confirm edit
+                    if st.button('Confirm Edit'):
+                        # Call edit_review function
+                        edit_review(review['id'], new_rating, new_description)
 
-                    # Add delete button
-                    if st.button('Delete'):
-                        # Prompt user to confirm deletion
-                        if st.confirm(f"Are you sure you want to delete this review?"):
-                            # Send request to API to delete review
-                            # Update UI accordingly if deletion is successful
-                            pass
+                # Add delete button
+                if st.button('Delete'):
+                    # Prompt user to confirm deletion
+                    if st.confirm(f"Are you sure you want to delete this review?"):
+                        # Call delete_review function
+                        delete_review(review['id'])
 
-                    st.divider()
-    except Exception as e:
-        st.error(f"Failed to parse JSON response: {str(e)}")
-
+                st.divider()
 
 
 
