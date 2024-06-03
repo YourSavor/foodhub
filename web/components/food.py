@@ -28,10 +28,14 @@ def refresh_foodstream(attrib, order):
 
 def filters():
     estab = state.selected_estab
+    col1, col2 = st.columns(2)
 
-    attrib = st.selectbox('Order by:', ['Name', 'Price', 'Rating'])
+    with col1:
+        attrib = st.selectbox('Order by:', ['Name', 'Price', 'Rating'])
 
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
+    with col2:  
+        sort_order = st.selectbox('', ['Ascending', 'Descending'])
+    
     order = 'asc' if sort_order == 'Ascending' else 'desc'
 
     refresh_foodstream(attrib, order)
@@ -88,44 +92,42 @@ def food_list():
 
     st.subheader("Menu")
 
-    col1, col2 = st.columns([0.25, 10])
 
 
-    with col2:
-        if (estab['user_id'] == state.user['id'] and state.page == 'estab/my/info'):
-            if st.button('Add an Item', key='add_button'):
-                state.page = 'food/add'
-                st.rerun()
+    if (estab['user_id'] == state.user['id'] and state.page == 'estab/my/info'):
+        if st.button('Add an Item', key='add_button'):
+            state.page = 'food/add'
+            st.rerun()
 
-        name = st.text_input('Search Food:')
+    name = st.text_input('Search Food:')
 
-        if name.strip():
-            response = requests.get(f"{API_URL}/foods/all/search/{name}")
+    if name.strip():
+        response = requests.get(f"{API_URL}/foods/all/search/{name}")
 
-            if response.status_code != 200:
-                st.error("Error Fetching foods!")
-            
-            state.foodstream = response.json()['foods']
-        else:
-            filters()
-
-    
-
-        if 'foodstream' not in state:
-            return
+        if response.status_code != 200:
+            st.error("Error Fetching foods!")
         
-        for food in state.foodstream:
-            with st.container():
-                food_label = f"{food['name']} | Php {food['price']:.2f}"
-                if st.button(food_label, key=f"food_{food['id']}"):
-                    state.selected_food = food
-                    
-                    if (state.page == 'estab/my/info'):
-                        state.page = 'estab/my/food'
-                    else:
-                        state.page = 'estab/food/info'
-                    
-                    st.rerun()
+        state.foodstream = response.json()['foods']
+    else:
+        filters()
+
+
+
+    if 'foodstream' not in state:
+        return
+    
+    for food in state.foodstream:
+        with st.container():
+            food_label = f"{food['name']} | Php {food['price']:.2f}"
+            if st.button(food_label, key=f"food_{food['id']}"):
+                state.selected_food = food
+                
+                if (state.page == 'estab/my/info'):
+                    state.page = 'estab/my/food'
+                else:
+                    state.page = 'estab/food/info'
+                
+                st.rerun()
 
     
 def food_info():

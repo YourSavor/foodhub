@@ -119,11 +119,14 @@ def review_estab_list():
         'Updated At': 'updated_at'
     }
 
-    attrib = st.selectbox('Order by:', ['Username', 'Rating', 'Created At'], index = 2, key = 'review_attrib')
-    state.attrib = attrib_mapping[attrib]
+    col1, col2 = st.columns(2)
 
-    state.order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed', key = 'review_order')
-    state.order = 'asc' if state.order == 'Ascending' else 'desc'
+    with col1:
+        attrib = st.selectbox('Order by:', ['Username', 'Rating', 'Created At'], index = 2, key = 'review_attrib')
+        state.attrib = attrib_mapping[attrib]
+    with col2:  
+        state.order = st.selectbox('', ['Ascending', 'Descending'], key = 'review_order')
+        state.order = 'asc' if state.order == 'Ascending' else 'desc'
 
     recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
 
