@@ -7,6 +7,41 @@ from passlib.context import CryptContext
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+delete_user_establishments_query = """
+    UPDATE establishments SET is_deleted = true WHERE user_id = %s;
+"""
+
+delete_user_foods_query = """
+    UPDATE foods SET is_deleted = true 
+    WHERE establishment_id IN (SELECT id FROM establishments WHERE user_id = %s);
+"""
+
+delete_user_reviews_query = """
+    UPDATE reviews SET is_deleted = true 
+    WHERE user_id = %s 
+    OR establishment_id IN (SELECT id FROM establishments WHERE user_id = %s) 
+    OR food_id IN (SELECT id FROM foods WHERE establishment_id IN (SELECT id FROM establishments WHERE user_id = %s));
+"""
+
+recompute_establishment_ratings_query = """
+    UPDATE establishments SET rating = (
+        SELECT COALESCE(AVG(rating), 0) 
+        FROM reviews 
+        WHERE establishment_id = establishments.id 
+        AND is_deleted = false
+    ) WHERE user_id = %s;
+"""
+
+recompute_food_ratings_query = """
+    UPDATE foods SET rating = (
+        SELECT COALESCE(AVG(rating), 0) 
+        FROM reviews 
+        WHERE food_id = foods.id 
+        AND is_deleted = false
+    ) WHERE establishment_id IN (SELECT id FROM establishments WHERE user_id = %s);
+"""
+
+
 select_user = 'SELECT * FROM users;'
 delete_user = 'UPDATE users SET (is_deleted = true) WHERE user_id = %s;'
 insert_user = 'INSERT INTO users (username, hashed_password, first_name, middle_name, last_name) VALUES (%s, %s, %s, %s, %s);'
@@ -35,6 +70,9 @@ class UserSignUpRequest(BaseModel):
 class UserSignInRequest(BaseModel):
     username: str
     password: str
+
+class DeleteUserRequest(BaseModel):
+    user_id: str
 
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
@@ -152,5 +190,26 @@ async def signup(user: UserSignUpRequest):
 
     cursor.execute(insert_user, (user.username, hashed_password, user.first_name, user.middle_name, user.last_name))
     connection.commit()
+    close_connection(connection, cursor)
+    return JSONResponse(status_code=200, content="success")
+
+@router.delete('/delete')
+async def delete_user(request: DeleteUserRequest):
+    connection, cursor = establish_connection()
+    
+    cursor.execute(delete_user_reviews_query, (request.user_id, request.user_id, request.user_id))
+
+    cursor.execute(delete_user_foods_query, (request.user_id,))
+
+    cursor.execute(delete_user_establishments_query, (request.user_id,))
+
+    cursor.execute(recompute_establishment_ratings_query, (request.user_id,))
+
+    cursor.execute(recompute_food_ratings_query, (request.user_id,))
+
+    cursor.execute("UPDATE users SET is_deleted = true WHERE id = %s;", (request.user_id,))
+
+    connection.commit()
+
     close_connection(connection, cursor)
     return JSONResponse(status_code=200, content="success")

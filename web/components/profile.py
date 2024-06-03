@@ -46,7 +46,10 @@ def profile_info():
     st.divider()
 
     if (st.button('Delete My Account', key=f"deleteprofile_{user['id']}")):
-        st.write("Hi")
+        response = requests.delete(f"{API_URL}/users/delete", json={"user_id": user['id']})
+
+        if response.status_code == 200:
+            st.success("Your account and all associated data have been deleted.")
 
 def edit_section():
     user = state.user
