@@ -58,66 +58,6 @@ def estab_stream():
                 state.page = 'estab/info'
                 st.rerun()
 
-import requests
-import streamlit as st
-from datetime import datetime
-
-API_URL = 'http://127.0.0.1:8000'
-state = st.session_state
-
-import components.food as fd
-import components.review as rw
-
-def refresh_stream(attrib, order):
-    response = requests.get(f'{API_URL}/establishments/all/{order}/{attrib}')
-
-    if response.status_code != 200:
-        st.error("Error Fetching establishments!")
-        return
-    
-    state.stream = response.json()['establishments']
-
-    if 'selected_estab' not in state:
-        return
-    
-    for establishment in state.stream:
-        if establishment['id'] == state.selected_estab['id']:
-            state.selected_estab = establishment
-            break
-
-def estab_stream():
-    st.title('Establishments')
-    name = st.text_input('Search:')
-    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
-
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
-
-    high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
-
-    st.divider()
-
-    if high_only == 'All':
-        refresh_stream(attrib, order)
-    else:
-        response = requests.get(f"{API_URL}/establishments/high/{order}")
-
-        if response.status_code != 200:
-            st.error("Error Fetching establishments!")
-        
-        state.stream = response.json()['establishments']
-
-
-    if 'stream' not in state:
-        return
-    
-    for establishment in state.stream:
-        with st.container():
-            if st.button(establishment['name']):
-                state.selected_estab = establishment
-                state.page = 'estab/info'
-                st.rerun()
-
 def estab_info():
     col1, col2 = st.columns([0.5, 10])
 
@@ -137,7 +77,7 @@ def estab_info():
             **{estab['name']}**
             ---
             - **Location:** {estab['location']}
-            - **Rating:** {estab['rating']:.2f}
+            - **Rating:** {estab['rating']}
             - **Added:** {formatted_created_at}
             """
         
@@ -182,8 +122,6 @@ def estab_info():
 
         rw.review_estab_list()
         
-   
-
 def myestab_stream():
     st.title('My Establishments')
 
@@ -246,7 +184,6 @@ def estab_edit():
             else:
                 st.error(f"Can't edit {estab['name']}!")
 
-
 def estab_add():
     
     col1, col2 = st.columns([0.5, 10])
@@ -279,33 +216,3 @@ def estab_add():
             else:
                 st.error(f"Can't add {name}!")
         
-
-        
-   
-
-def myestab_stream():
-    st.title('My Establishments')
-
-    if st.button('Add', key='add_button'):
-        state.page = 'estab/add'
-        st.rerun()
-    
-    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
-
-    st.divider()
-
-    refresh_stream(attrib, order)
-
-    if 'stream' not in state:
-        return
-    
-    for establishment in state.stream:
-        if establishment['user_id'] != state.user['id']:
-            continue
-        with st.container():
-            if st.button(establishment['name']):
-                state.selected_estab = establishment
-                state.page = 'estab/my/info'
-                st.rerun()
