@@ -5,8 +5,8 @@ from datetime import datetime
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
-import food
-import review
+import components.food as fd
+import components.review as rw
 
 def refresh_stream(attrib, order):
     response = requests.get(f'{API_URL}/establishments/all/{order}/{attrib}')
@@ -117,12 +117,12 @@ def estab_info():
 
         st.divider()
 
-        food.food_list()
+        fd.food_list()
 
         st.divider()
 
     
-        review.review_estab_list()
+        rw.review_estab_list()
         
    
 

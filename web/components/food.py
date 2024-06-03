@@ -5,7 +5,7 @@ from datetime import datetime
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
 
-import review
+import components.review as rw
 
 def refresh_foodstream(attrib, order):
     estab = state.selected_estab
@@ -190,7 +190,7 @@ def food_info():
 
         st.divider()
 
-        review.review_food_list()
+        rw.review_food_list()
 
 def food_edit():
     col1, col2 = st.columns([0.5, 10])
