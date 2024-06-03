@@ -40,11 +40,10 @@ def signin():
             st.session_state.page = 'stream'
             st.rerun()
         elif response.status_code == 400:
-            st.error(response.json().get("detail"))
+            st.toast(response.json().get("detail"))
         else:
-            st.error("Unable to sign in due to internal error. Please try again later!")
-            # print(response.json())
-            # st.error(response.json().get("detail"))
+            st.toast("Unable to sign in due to internal error. Please try again later!")
+
 
     st.markdown(
         """
@@ -95,11 +94,9 @@ def signup():
         })
 
         if response.status_code == 200:
-            st.success("You have successfully signed up!")
-            st.info("Go to Sign In page to log in.")
+            st.toast("You have successfully signed up!")
         else:
-            print(response.json())
-            st.error(response.json().get("detail"))
+            st.toast(response.json().get("detail"))
 
     st.markdown(
         """
