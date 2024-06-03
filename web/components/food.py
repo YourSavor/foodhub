@@ -117,7 +117,7 @@ def food_list():
         for food in state.foodstream:
             with st.container():
                 food_label = f"{food['name']} | Php {food['price']:.2f}"
-                if st.button(food_label):
+                if st.button(food_label, key=f"food_{food['id']}"):
                     state.selected_food = food
                     
                     if (state.page == 'estab/my/info'):

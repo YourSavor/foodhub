@@ -53,7 +53,7 @@ def estab_stream():
     
     for establishment in state.stream:
         with st.container():
-            if st.button(establishment['name']):
+            if st.button(establishment['name'], key=f"estab_{establishment['id']}"):
                 state.selected_estab = establishment
                 state.page = 'estab/info'
                 st.rerun()
@@ -144,7 +144,7 @@ def myestab_stream():
         if establishment['user_id'] != state.user['id']:
             continue
         with st.container():
-            if st.button(establishment['name']):
+            if st.button(establishment['name'], key=f"myestab_{establishment['id']}"):
                 state.selected_estab = establishment
                 state.page = 'estab/my/info'
                 st.rerun()
