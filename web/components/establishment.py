@@ -8,6 +8,26 @@ state = st.session_state
 import components.food as fd
 import components.review as rw
 
+def filters():
+    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
+
+    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
+    order = 'asc' if sort_order == 'Ascending' else 'desc'
+
+    high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
+
+    st.divider()
+
+    if high_only == 'All':
+        refresh_stream(attrib, order)
+    else:
+        response = requests.get(f"{API_URL}/establishments/high/{order}")
+
+        if response.status_code != 200:
+            st.error("Error Fetching establishments!")
+        
+        state.stream = response.json()['establishments']
+
 def refresh_stream(attrib, order):
     response = requests.get(f'{API_URL}/establishments/all/{order}/{attrib}')
 
@@ -29,35 +49,15 @@ def estab_stream():
     st.title('Establishments')
     name = st.text_input('Search:')
 
-    name = st.text_input('Search Food:')
-
     if name.strip():
-        response = requests.get(f"{API_URL}/establishments/all/search/{name}")
+        response = requests.get(f"{API_URL}/establishments/search/{name}")
 
-        if response.status_code != 200:
-            st.error("Error Fetching foods!")
-        
-        state.foodstream = response.json()['foods']
-
-    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
-
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
-
-    high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
-
-    st.divider()
-
-    if high_only == 'All':
-        refresh_stream(attrib, order)
+        if response.status_code == 200:
+            state.stream = response.json().get('establishments') 
+        else: 
+            st.error(response.json().get('detail'))
     else:
-        response = requests.get(f"{API_URL}/establishments/high/{order}")
-
-        if response.status_code != 200:
-            st.error("Error Fetching establishments!")
-        
-        state.stream = response.json()['establishments']
-
+        filters()
 
     if 'stream' not in state:
         return
