@@ -48,7 +48,7 @@ insert_user = 'INSERT INTO users (username, hashed_password, first_name, middle_
 update_user_query = 'UPDATE users SET username=%s, hashed_password=%s, first_name=%s, middle_name=%s, last_name=%s WHERE id = %s;'
 search_user_name = 'SELECT * FROM users WHERE name LIKE "% %s %";'
 search_user_id = 'SELECT * FROM users WHERE id = %s;'
-search_user_username = "SELECT * FROM users WHERE username=%s ;"
+search_user_username = "SELECT * FROM users WHERE username=%s AND is_deleted = false;"
 
 router = APIRouter(prefix="/users", tags=["users"])
 
