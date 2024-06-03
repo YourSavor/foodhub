@@ -1,9 +1,21 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from db.db import establish_connection, close_connection
+from decimal import Decimal
+from datetime import datetime
 
 router = APIRouter(prefix="/establishments", tags=["establishments"])
 
+search_establishment_query = """ SELECT * FROM establishments 
+    WHERE is_deleted = false 
+    AND (LOWER(name) LIKE LOWER(%s) OR LOWER(name) LIKE LOWER(%s)) 
+    ORDER BY 
+        CASE 
+            WHEN LOWER(name) LIKE LOWER(%s) THEN 0 
+            ELSE 1 
+        END;
+"""
 insert_establishment_query = 'INSERT INTO establishments (user_id, name, location) VALUES ( %s, %s, %s);'
 update_establishment_query = 'UPDATE establishments SET name=%s, location=%s WHERE id=%s;'
 
@@ -116,3 +128,28 @@ async def delete_food(establishment: DeleteEstablishRequest):
 
     close_connection(connection, cursor)
     return {'success': True}
+
+@router.get('/search/{name}')
+async def search_establishment(name: str):
+    connection, cursor = establish_connection()
+    name_lower = name.lower()
+
+    cursor.execute(search_establishment_query, (f'%{name_lower}%', f'%{name_lower}%', f'%{name_lower}%'))
+    establishments = cursor.fetchall()
+    connection.commit()
+    close_connection(connection, cursor)
+    
+    if not establishments:
+        raise HTTPException(status_code=400, detail="No establishments match search")
+    
+    columns = get_columns(cursor)
+    establishment_list = [dict(zip(columns, establishment)) for establishment in establishments]
+    
+    for establishment in establishment_list:
+        for key, value in establishment.items():
+            if isinstance(value, Decimal):
+                establishment[key] = float(value)
+            if isinstance(value, datetime):
+                establishment[key] = value.isoformat()
+
+    return JSONResponse(status_code=200, content={"establishments": establishment_list})

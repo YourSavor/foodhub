@@ -28,6 +28,17 @@ def refresh_stream(attrib, order):
 def estab_stream():
     st.title('Establishments')
     name = st.text_input('Search:')
+
+    name = st.text_input('Search Food:')
+
+    if name.strip():
+        response = requests.get(f"{API_URL}/establishments/all/search/{name}")
+
+        if response.status_code != 200:
+            st.error("Error Fetching foods!")
+        
+        state.foodstream = response.json()['foods']
+
     attrib = st.selectbox('Order by:', ['Name', 'Rating'])
 
     sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
