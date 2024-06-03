@@ -39,6 +39,8 @@ def signin():
             st.session_state.user = response.json().get("user")
             st.session_state.page = 'stream'
             st.rerun()
+        elif response.status_code == 400:
+            st.error(response.json().get("detail"))
         else:
             st.error("Unable to sign in due to internal error. Please try again later!")
             # print(response.json())
