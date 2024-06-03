@@ -217,3 +217,4 @@ def review_food_list():
             st.write(f"**Description:** {review['description']}")
             st.write(f"**Date:** {review['created_at']}")
             st.divider()
+
