@@ -9,12 +9,15 @@ import components.food as fd
 import components.review as rw
 
 def filters():
-    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
+    col1, col2, col3 = st.columns(3)
 
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
-
-    high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
+    with col1:
+        attrib = st.selectbox('Order by:', ['Name', 'Rating'])
+    with col2:  
+        sort_order = st.selectbox(' ', ['Ascending', 'Descending'])
+        order = 'asc' if sort_order == 'Ascending' else 'desc'
+    with col3:
+        high_only = st.selectbox('Show:', ['All', 'High Only (Rating >= 4)'])
 
     st.divider()
 
@@ -167,9 +170,13 @@ def myestab_stream():
         state.page = 'estab/add'
         st.rerun()
     
-    attrib = st.selectbox('Order by:', ['Name', 'Rating'])
-    sort_order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed')
-    order = 'asc' if sort_order == 'Ascending' else 'desc'
+    col1, col2 = st.columns(2)
+
+    with col1:
+        attrib = st.selectbox('Order by:', ['Name', 'Rating'])
+    with col2:  
+        sort_order = st.selectbox(' ', ['Ascending', 'Descending'])
+        order = 'asc' if sort_order == 'Ascending' else 'desc'
 
     st.divider()
 

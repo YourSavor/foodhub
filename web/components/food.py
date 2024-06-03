@@ -34,7 +34,7 @@ def filters():
         attrib = st.selectbox('Order by:', ['Name', 'Price', 'Rating'])
 
     with col2:  
-        sort_order = st.selectbox('', ['Ascending', 'Descending'])
+        sort_order = st.selectbox(' ', ['Ascending', 'Descending'])
     
     order = 'asc' if sort_order == 'Ascending' else 'desc'
 
