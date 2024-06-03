@@ -1,8 +1,11 @@
 import requests
 import streamlit as st
+from datetime import datetime
 
 API_URL = 'http://127.0.0.1:8000'
 state = st.session_state
+
+import components.establishment as et 
 
 def review_add_estab():
     estab = state.selected_estab
@@ -28,7 +31,8 @@ def review_add_estab():
                 'rating': rating
             })
             if response.status_code == 200:
-                st.success("Review added successfully!")
+                refresh_estab_reviews(state.attrib, state.order)
+                st.toast("Review added successfully!")
                 state.page = 'estab/info'
                 st.rerun()
             else:
@@ -59,7 +63,7 @@ def review_add_food():
                 'rating': rating
             })
             if response.status_code == 200:
-                st.success("Review added successfully!")
+                st.toast("Review added successfully!")
                 state.page = 'estab/food/info'
                 st.rerun()
             else:
@@ -67,66 +71,126 @@ def review_add_food():
                 
 
 def delete_review(review_id):
-    response = requests.put(f"{API_URL}/reviews/delete/{review_id}")
+    estab = state.selected_estab
+    response = requests.put(f"{API_URL}/reviews/delete/{review_id}/{estab['id']}",)
     if response.status_code == 200:
-        st.success("Review deleted successfully!")
+        refresh_estab_reviews(state.attrib, state.order)
+        st.toast("Review deleted successfully!")
     else:
         st.error("Failed to delete review.")
 
 
 def edit_review(review_id, new_rating, new_description):
-    response = requests.put(f"{API_URL}/reviews/update", json={
+    estab = state.selected_estab
+    response = requests.post(f"{API_URL}/reviews/update", json={
         'id': review_id,
         'rating': new_rating,
-        'description': new_description
+        'description': new_description,
+        'establishment_id': estab['id']
     })
     if response.status_code == 200:
-        st.success("Review updated successfully!")
+        refresh_estab_reviews(state.attrib, state.order)
+        st.toast("Review updated successfully!")
     else:
         st.error("Failed to update review.")
 
+
+def refresh_estab_reviews(attrib, order):
+    estab = state.selected_estab
+
+    response = requests.get(f"{API_URL}/reviews/establishment/{estab['id']}/{attrib}/{order}")
+
+    if response.status_code != 200:
+        st.error("Error Fetching establishments!")
+        return
+    
+    et.refresh_stream('name', 'asc')
+    state.rev_estab_stream = response.json()['reviews']
 
 def review_estab_list():
     estab = state.selected_estab
 
     st.subheader(f"Reviews for {estab['name']}")
     
-    # Fetch reviews from the API
-    response = requests.get(f"{API_URL}/reviews/establishment/{estab['id']}/rating/desc")
-    
-    if response.status_code != 200:
-        st.error("Failed to fetch reviews.")
-        return
+    attrib_mapping = {
+        'Username': 'username',
+        'Rating': 'rating',
+        'Created At': 'created_at',
+        'Updated At': 'updated_at'
+    }
 
-    reviews = response.json().get('reviews', [])
+    attrib = st.selectbox('Order by:', ['Username', 'Rating', 'Created At'], index = 2, key = 'review_attrib')
+    state.attrib = attrib_mapping[attrib]
 
-    if not reviews:
-        st.info("No reviews available for this establishment.")
+    state.order = st.selectbox('Order', ['Ascending', 'Descending'], label_visibility='collapsed', key = 'review_order')
+    state.order = 'asc' if state.order == 'Ascending' else 'desc'
+
+    recent = st.selectbox('Show', ['All', 'Recent (<= 1 month)'], key='review_recent')
+
+    if (recent == 'All'):
+        refresh_estab_reviews(state.attrib, state.order)
     else:
-        for review in reviews:
-            with st.container():
-                st.write(f"**Rating:** {review['rating']}")
-                st.write(f"**Description:** {review['description']}")
-                st.write(f"**Date:** {review['created_at']}")
+        response = requests.get(f"{API_URL}/reviews/recent/establishment/{estab['id']}/{state.attrib}/{state.order}")
+
+        if response.status_code != 200:
+            st.error("Error Fetching establishments!")
+        else:
+            state.rev_estab_stream = response.json()['reviews']
+
+
+
+    for review in state.rev_estab_stream:
+        with st.container():
+            st.divider()
+            created_at_dt = datetime.strptime(review['created_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+            formatted_created_at = created_at_dt.strftime('%B %d, %Y | %H:%M')
+
+            # Building review information
+            review_info = f"""
+            **{review['username']}**
+            ---
+            - **Rating:** {review['rating']}  
+            - **Description:** {review['description']}  
+            - **Created:** {formatted_created_at}"""
+
+            if review['updated_at']:
+                updated_at_dt = datetime.strptime(review['updated_at'], '%Y-%m-%dT%H:%M:%S.%f+00:00')
+                formatted_updated_at = updated_at_dt.strftime('%B %d, %Y | %H:%M')
+                review_info += f"- **Updated:** {formatted_updated_at}"
+
+            st.info(review_info)
+
+            if (state.user['id'] != review['user_id']):
+                continue
+
+            col3, col4 = st.columns(2)
+            
+            with col3:
+                if st.button('Edit', key=f"edit_{review['id']}"):
+                    state.show_edit = True
+
+            with col4:
+                if st.button('Delete', key=f"delete_{review['id']}"):
+                    delete_review(review['id'])
+                    refresh_estab_reviews(state.attrib, state.order)
+                    st.rerun()
+
+            if 'show_edit' in state and state.show_edit:
+                new_rating = st.slider("New Rating", 1, 5, review['rating'], key=f"slider_{review['id']}")
+                new_description = st.text_area("New Description", value=review['description'], key=f"descedit_{review['id']}")
                 
-                # Add edit button
-                if st.button('Edit'):
-                    new_rating = st.slider("New Rating", 1, 5, review['rating'])
-                    new_description = st.text_area("New Description", value=review['description'])
-                    
-                    # Prompt user to confirm edit
-                    if st.button('Confirm Edit'):
-                        # Call edit_review function
-                        edit_review(review['id'], new_rating, new_description)
+                if st.button('Confirm Edit', key=f"confirm_edit_{review['id']}"):
+                    state.show_edit = False
+                    edit_review(review['id'], new_rating, new_description)
+                    refresh_estab_reviews(state.attrib, state.order)
+                    st.rerun()
+                
+                if st.button('Cancel', key=f"cancel_edit_{review['id']}"):
+                    state.show_edit = False
+                    st.rerun()
 
-                # Add delete button
-                if st.button('Delete'):
-                    # Prompt user to confirm deletion
-                    if st.confirm(f"Are you sure you want to delete this review?"):
-                        # Call delete_review function
-                        delete_review(review['id'])
+            st.divider()
 
-                st.divider()
 
 
 

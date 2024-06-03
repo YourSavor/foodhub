@@ -137,7 +137,7 @@ def estab_info():
             **{estab['name']}**
             ---
             - **Location:** {estab['location']}
-            - **Rating:** {estab['rating']}
+            - **Rating:** {estab['rating']:.2f}
             - **Added:** {formatted_created_at}
             """
         
