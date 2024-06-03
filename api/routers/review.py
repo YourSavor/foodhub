@@ -3,11 +3,6 @@ from pydantic import BaseModel
 from db.db import establish_connection, close_connection
 
 # SQL queries
-insert_food_review_query = 'INSERT INTO reviews (user_id, food_id, rating, description) VALUES (%s, %s, %s, %s);'
-
-
-
-view_reviews_by_food_query = 'SELECT * FROM reviews WHERE food_id = %s AND is_deleted = FALSE ORDER BY %s %s;'
 view_review_query = 'SELECT * FROM reviews WHERE id = %s AND is_deleted = FALSE;'
 
 view_reviews_recent_by_food_query = 'SELECT * FROM reviews WHERE food_id = %s AND created_at >= CURRENT_DATE - INTERVAL \'1 month\' AND is_deleted = FALSE ORDER BY %s %s;'
@@ -30,7 +25,8 @@ router = APIRouter(prefix="/reviews", tags=["reviews"])
 # Pydantic models
 class UpdateReviewRequest(BaseModel):
     id: str
-    establishment_id: str
+    establishment_id: str = ''
+    food_id: str = ''
     rating: float
     description: str
 
@@ -49,11 +45,16 @@ class CreateEstablishmentReviewRequest(BaseModel):
 def get_columns(cursor):
     return [col[0] for col in cursor.description]
 
+insert_food_review_query = """
+INSERT INTO reviews (user_id, food_id, rating, description) VALUES (%s, %s, %s, %s);
+UPDATE foods SET rating = coalesce((SELECT AVG(rating) FROM reviews WHERE food_id = %s AND is_deleted = false), 0) where id = %s;
+"""
+
 @router.post('/food')
 async def create_food_review(review: CreateFoodReviewRequest):
     connection, cursor = establish_connection()
 
-    cursor.execute(insert_food_review_query, (review.user_id, review.food_id, review.rating, review.description))
+    cursor.execute(insert_food_review_query, (review.user_id, review.food_id, review.rating, review.description, review.food_id, review.food_id))
     connection.commit()
 
     close_connection(connection, cursor)
@@ -80,6 +81,7 @@ async def create_establishment_review(review: CreateEstablishmentReviewRequest):
 update_review_query = """
 UPDATE reviews SET rating=%s, description=%s, updated_at=CURRENT_TIMESTAMP WHERE id=%s;
 UPDATE establishments SET rating = coalesce((SELECT AVG(rating) FROM reviews WHERE establishment_id = %s AND is_deleted = false), 0) where id = %s;
+UPDATE foods SET rating = coalesce((SELECT AVG(rating) FROM reviews WHERE food_id = %s AND is_deleted = false), 0) where id = %s;
 """
 
 
@@ -87,7 +89,7 @@ UPDATE establishments SET rating = coalesce((SELECT AVG(rating) FROM reviews WHE
 async def update_review(review: UpdateReviewRequest):
     connection, cursor = establish_connection()
     
-    cursor.execute(update_review_query, (review.rating, review.description, review.id, review.establishment_id, review.establishment_id))
+    cursor.execute(update_review_query, (review.rating, review.description, review.id, review.establishment_id, review.establishment_id, review.food_id, review.food_id))
     connection.commit()
     
     close_connection(connection, cursor)
@@ -99,13 +101,14 @@ async def update_review(review: UpdateReviewRequest):
 delete_review_query = """
 UPDATE reviews SET is_deleted = TRUE, updated_at=CURRENT_TIMESTAMP WHERE id = %s;
 UPDATE establishments SET rating = coalesce((SELECT AVG(rating) FROM reviews WHERE establishment_id = %s AND is_deleted = false), 0) where id = %s;
+UPDATE foods SET rating = coalesce((SELECT AVG(rating) FROM reviews WHERE food_id = %s AND is_deleted = false), 0) where id = %s;
 """
 
-@router.put('/delete/{id}/{establishment_id}')
-async def delete_review(id: str, establishment_id: str):
+@router.put('/delete/{id}/{establishment_id}/{food_id}')
+async def delete_review(id: str, establishment_id: str, food_id: str):
     connection, cursor = establish_connection()
     
-    cursor.execute(delete_review_query, (id, establishment_id, establishment_id))
+    cursor.execute(delete_review_query, (id, establishment_id, establishment_id, food_id, food_id))
     connection.commit()
     
     close_connection(connection, cursor)
@@ -139,11 +142,17 @@ async def view_reviews_by_establishment(establishment_id: str, attribute: str, o
     return {'success': len(reviews_list), 'reviews': reviews_list}
 
 
+view_reviews_by_food_query = """SELECT 
+r.*, u.username
+ FROM reviews r 
+left join users u on r.user_id = u.id 
+WHERE food_id = %s AND r.is_deleted = false"""
+
 @router.get('/food/{food_id}/{attribute}/{order}')
 async def view_reviews_by_food(food_id: str, attribute: str, order: str):
     connection, cursor = establish_connection()
 
-    query = f"{view_reviews_by_food_query} ORDER BY {attribute} {order};"
+    query = f"{view_reviews_by_food_query} ORDER BY {attribute} {order}, r.updated_at {order};"
 
     cursor.execute(query, (food_id,))
     reviews = cursor.fetchall()
@@ -176,6 +185,12 @@ async def view_review_by_id(id: str):
     
     return {'success': 1, 'review': review_dict}
 
+view_reviews_recent_by_food_query = """SELECT 
+r.*, u.username
+ FROM reviews r 
+left join users u on r.user_id = u.id 
+WHERE food_id = %s AND r.is_deleted = false AND r.created_at >= CURRENT_DATE - INTERVAL \'1 month\'"""
+
 view_reviews_recent_by_establishment_query = """SELECT 
 r.*, u.username
  FROM reviews r 
@@ -205,7 +220,9 @@ async def view_recent_reviews_by_establishment(establishment_id: str, attribute:
 @router.get('/recent/food/{food_id}/{attribute}/{order}')
 async def view_recent_reviews_by_food(food_id: str, attribute: str, order: str):
     connection, cursor = establish_connection()
-    query = view_reviews_recent_by_food_query % (attribute, order)
+
+    query = f"{view_reviews_recent_by_establishment_query} ORDER BY {attribute} {order}, r.updated_at {order};"
+
     cursor.execute(query, (food_id,))
     reviews = cursor.fetchall()
     connection.commit()
