@@ -65,15 +65,72 @@ def estab_stream():
     if 'stream' not in state:
         return
     
-    for establishment in state.stream:
-        with st.container():
-            if st.button(establishment['name'], key=f"estab_{establishment['id']}"):
-                state.selected_estab = establishment
-                state.page = 'estab/info'
-                st.rerun()
+   
+
+    for establishment in st.session_state['stream']:
+
+        estab = f"""    
+            <h3> {establishment['name']} </h3>
+            <div style="line-height: 1.2; margin-bottom: 10px;">
+                <strong>Rating:</strong> {establishment['rating']}<br>
+                <strong>Location:</strong> {establishment['location']}
+            </div>
+        """
+
+        st.markdown(
+            """
+            <style>
+            button[kind="primary"] {
+                background: none!important;
+                border: none;
+                padding: 0!important;
+                color: black !important;
+                text-decoration: none;
+                cursor: pointer;
+                border: none !important;
+                font-style: italic;
+                text-align: left;
+            }
+            button[kind="primary"]:hover {
+                text-decoration: none;
+                color: black !important;
+            }
+            button[kind="primary"]:focus {
+                outline: none !important;
+                box-shadow: none !important;
+                color: black !important;
+            }
+            </style>
+            """,
+            unsafe_allow_html=True,
+        )
+ 
+        st.markdown(estab, unsafe_allow_html=True)
+
+        st.markdown("""
+            <style>
+                div.stButton > button {
+                    width: auto !important;
+                }
+            </style>
+        """, unsafe_allow_html=True)
+
+        if st.button("See more", key=f"estab_{establishment['id']}", type="primary"):
+            st.session_state['selected_estab'] = establishment
+            st.session_state['page'] = 'estab/info'
+            st.rerun()
+
+
+
+
+
+
+def clicked_estab(establishment):
+    state.selected_estab = establishment
+    state.page = 'estab/info'
+    st.rerun()
 
 def estab_info():
-
 
     st.markdown(
         """
@@ -84,8 +141,8 @@ def estab_info():
             padding: 0!important;
             color: black !important;
             text-decoration: none;
-            cursor: pointer;
-            border: none !important;
+        cursor: pointer;
+        border: none !important;
         }
         button[kind="primary"]:hover {
             text-decoration: none;
